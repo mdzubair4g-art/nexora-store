@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXORA.in — Modern Marketplace for Tech, Fashion, Home, Beauty & More</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    body { background-color: #f4f6fb; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .nav-glass { background: linear-gradient(90deg, #0f172a 0%, #1e1b4b 55%, #0f172a 100%); }
+    .sub-bar { background-color: #172038; }
+    .btn-primary { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #fff; }
+    .btn-primary:hover { filter: brightness(1.06); }
+    .btn-cyan { background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%); color: #fff; }
+    .btn-cyan:hover { filter: brightness(1.06); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-900">
+
+  <!-- TOP HEADER -->
+  <header class="nav-glass text-white sticky top-0 z-40 shadow-lg border-b border-indigo-900/50">
+    <div class="max-w-[1440px] mx-auto px-3 md:px-6 py-2.5 flex flex-wrap items-center gap-3">
+      <button onclick="goHome()" class="flex items-center gap-2.5 px-2 py-1 rounded-xl hover:bg-white/10 transition">
+        <svg width="36" height="36" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="nxGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#06b6d4"/>
+              <stop offset="100%" stop-color="#f97316"/>
+            </linearGradient>
+          </defs>
+          <rect x="2" y="2" width="36" height="36" rx="10" fill="url(#nxGrad)"/>
+          <path d="M12 27V13L21 27V13" stroke="#0f172a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M24 15L30 25M30 15L24 25" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round"/>
+        </svg>
+        <div class="text-left">
+          <div class="text-xl font-black tracking-wider leading-none">NEXORA<span class="text-cyan-400 text-xs font-bold">.in</span></div>
+          <div class="text-[10px] text-slate-300 tracking-widest uppercase">Curated Marketplace</div>
+        </div>
+      </button>
+
+      <button onclick="changeLocation()" class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left">
+        <i class="fa-solid fa-location-dot text-cyan-400"></i>
+        <div>
+          <div class="text-[10px] text-slate-300 leading-tight">Deliver to</div>
+          <div id="locationText" class="text-xs font-bold leading-tight">Bengaluru 560001</div>
+        </div>
+      </button>
+
+      <form onsubmit="handleSearch(event)" class="flex-1 flex min-w-[220px] h-10 rounded-xl overflow-hidden bg-white shadow-inner focus-within:ring-2 focus-within:ring-cyan-400">
+        <select id="categorySelect" onchange="applyFilters()" class="bg-slate-100 text-slate-800 text-xs font-semibold px-3 border-r border-slate-200 outline-none cursor-pointer">
+          <option value="All">All Departments</option>
+          <option value="Mobiles & Tablets">Mobiles & Tablets</option>
+          <option value="Laptops & Audio">Laptops & Audio</option>
+          <option value="Fashion & Sneakers">Fashion & Sneakers</option>
+          <option value="Home & Kitchen">Home & Kitchen</option>
+          <option value="Beauty & Grooming">Beauty & Grooming</option>
+          <option value="Fitness & Sports">Fitness & Sports</option>
+          <option value="Books & Desk">Books & Desk</option>
+          <option value="Gaming & Consoles">Gaming & Consoles</option>
+        </select>
+        <input id="searchInput" type="text" placeholder="Search 8 collections, brands, gadgets, sneakers..." class="flex-1 px-3.5 text-sm text-slate-900 outline-none" />
+        <button type="submit" class="btn-primary px-4 font-bold text-sm"><i class="fa-solid fa-magnifying-glass"></i></button>
+      </form>
+
+      <div class="flex items-center gap-1.5 md:gap-2">
+        <button onclick="toggleServerDrawer()" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/25">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span>Server: Online</span>
+        </button>
+        <button onclick="openModal('authModal')" class="px-2.5 py-1.5 rounded-xl hover:bg-white/10 text-left">
+          <div id="userGreeting" class="text-[10px] text-slate-300 leading-tight">Welcome, Guest</div>
+          <div class="text-xs font-bold leading-tight">Account</div>
+        </button>
+        <button onclick="openWishlist()" class="relative px-2.5 py-1.5 rounded-xl hover:bg-white/10">
+          <i class="fa-regular fa-heart text-lg text-rose-400"></i>
+          <span id="wishBadge" class="absolute top-0.5 right-0.5 bg-rose-500 text-white text-[10px] font-extrabold px-1.5 rounded-full">0</span>
+        </button>
+        <button onclick="openOrders()" class="hidden md:block px-2.5 py-1.5 rounded-xl hover:bg-white/10 text-left">
+          <div class="text-[10px] text-slate-300 leading-tight">Track</div>
+          <div class="text-xs font-bold leading-tight">Orders</div>
+        </button>
+        <button onclick="toggleCart(true)" class="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15">
+          <i class="fa-solid fa-bag-shopping text-lg text-cyan-300"></i>
+          <span id="cartBadge" class="bg-orange-500 text-white text-xs font-extrabold px-1.5 py-0.2 rounded-full">0</span>
+          <span class="hidden sm:inline text-xs font-bold">Bag</span>
+        </button>
+      </div>
+    </div>
+
+    <nav class="sub-bar text-slate-200 text-xs px-4 md:px-6 py-2 flex items-center gap-4 overflow-x-auto no-scrollbar border-t border-white/5">
+      <button onclick="goHome()" class="font-bold text-white hover:text-cyan-300 whitespace-nowrap"><i class="fa-solid fa-table-cells-large mr-1"></i>All Collections</button>
+      <button onclick="filterFlashDeals()" class="text-amber-300 font-bold hover:underline whitespace-nowrap"><i class="fa-solid fa-bolt mr-1"></i>Flash Deals</button>
+      <button onclick="selectCategory('Mobiles & Tablets')" class="hover:text-cyan-300 whitespace-nowrap">Mobiles & Tablets</button>
+      <button onclick="selectCategory('Laptops & Audio')" class="hover:text-cyan-300 whitespace-nowrap">Laptops & Audio</button>
+      <button onclick="selectCategory('Fashion & Sneakers')" class="hover:text-cyan-300 whitespace-nowrap">Fashion & Sneakers</button>
+      <button onclick="selectCategory('Home & Kitchen')" class="hover:text-cyan-300 whitespace-nowrap">Home & Kitchen</button>
+      <button onclick="selectCategory('Beauty & Grooming')" class="hover:text-cyan-300 whitespace-nowrap">Beauty & Grooming</button>
+      <button onclick="selectCategory('Fitness & Sports')" class="hover:text-cyan-300 whitespace-nowrap">Fitness & Sports</button>
+      <button onclick="selectCategory('Books & Desk')" class="hover:text-cyan-300 whitespace-nowrap">Books & Desk</button>
+      <button onclick="selectCategory('Gaming & Consoles')" class="hover:text-cyan-300 whitespace-nowrap">Gaming & Consoles</button>
+      <button onclick="openModal('sellerModal')" class="ml-auto bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 px-3 py-0.5 rounded-full font-bold hover:bg-cyan-500/30 whitespace-nowrap">+ Seller Studio</button>
+    </nav>
+  </header>
+
+  <!-- MAIN HOME VIEW -->
+  <div id="homeView" class="flex-1">
+    <section class="max-w-[1440px] mx-auto px-3 md:px-6 pt-4">
+      <div class="relative rounded-2xl overflow-hidden shadow-md">
+        <div id="heroBanner" class="min-h-[250px] md:min-h-[320px] bg-gradient-to-r from-[#0f172a] via-[#1e1b4b] to-[#0e7490] text-white p-6 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
+          <div class="max-w-xl space-y-3">
+            <span id="heroBadge" class="inline-block bg-cyan-400 text-slate-950 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Season Mega Showcase</span>
+            <h1 id="heroTitle" class="text-2xl md:text-4xl font-black leading-tight">Next-Gen Flagship Tech & Audio Up to 50% Off</h1>
+            <p id="heroSubtitle" class="text-xs md:text-sm text-slate-200">Use code <strong class="text-amber-300">NEXORA10</strong> at checkout for an extra 10% instant discount across all 8 collections.</p>
+            <div class="pt-1 flex flex-wrap gap-3">
+              <button onclick="filterFlashDeals()" class="btn-primary px-5 py-2.5 rounded-xl font-bold text-xs shadow">Shop Flash Deals</button>
+              <button onclick="scrollToCatalog()" class="bg-white/15 hover:bg-white/25 border border-white/20 px-5 py-2.5 rounded-xl font-bold text-xs">Explore 24 Items</button>
+            </div>
+          </div>
+          <div class="hidden md:flex items-center justify-center">
+            <img id="heroImg" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80" alt="Featured product" class="w-64 h-52 object-cover rounded-2xl shadow-2xl border-2 border-white/20" />
+          </div>
+        </div>
+        <button onclick="prevSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 bg-slate-950/40 hover:bg-slate-950/70 text-white w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+        <button onclick="nextSlide()" class="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-950/40 hover:bg-slate-950/70 text-white w-9 h-9 rounded-full flex items-center justify-center"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+      </div>
+    </section>
+
+    <section class="max-w-[1440px] mx-auto px-3 md:px-6 pt-5">
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">Shop by Department (8 Collections)</h2>
+          <button onclick="goHome()" class="text-xs font-bold text-cyan-700 hover:underline">View All</button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          <button onclick="selectCategory('Mobiles & Tablets')" class="group p-3 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-100 text-center transition"><div class="w-10 h-10 mx-auto rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-lg"><i class="fa-solid fa-mobile-screen-button"></i></div><div class="text-xs font-bold mt-2">Mobiles & Tablets</div></button>
+          <button onclick="selectCategory('Laptops & Audio')" class="group p-3 rounded-xl bg-slate-50 hover:bg-cyan-50 border border-slate-100 text-center transition"><div class="w-10 h-10 mx-auto rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center text-lg"><i class="fa-solid fa-headphones"></i></div><div class="text-xs font-bold mt-2">Laptops & Audio</div></button>
+          <button onclick="selectCategory('Fashion & Sneakers')" class="group p-3 rounded-xl bg-slate-50 hover:bg-orange-50 border border-slate-100 text-center transition"><div class="w-10 h-10 mx-auto rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center text-lg"><i class="fa-solid fa-shoe-prints"></i></div><div class="text-xs font-bold mt-2">Fashion & Sneakers</div></button>
+          <button onclick="selectCategory('Home & Kitchen')" class="group p-3 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-100 text-center transition"><div class="w-10 h-10 mx-auto rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg"><i class="fa-solid fa-blender"></i></div><div class="text-xs font-bold mt-2">Home & Kitchen</div></button>
+          <button onclick="selectCategory('Beauty & Grooming')" class="group p-3 rounded-xl bg-slate-50 hover:bg-rose-50 border border-slate-100 text-center transition"><div class="w-10 h-10 mx-auto rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center text-lg"><i class="fa-solid fa-wand-magic-sparkles"></i></div><div class="text-xs font-bold mt-2">Beauty & Grooming</div></button>
+          <button onclick="selectCategory('Fitness & Sports')" class="group p-3 rounded-xl bg-slate-50 hover:bg-teal-50 border border-slate-100 text-center transition"><div class="w-10 h-10 mx-auto rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-lg"><i class="fa-solid fa-dumbbell"></i></div><div class="text-xs font-bold mt-2">Fitness & Sports</div></button>
+          <button onclick="selectCategory('Books & Desk')" class="group p-3 rounded-xl bg-slate-50 hover:bg-amber-50 border border-slate-100 text-center transition"><div class="w-10 h-10 mx-auto rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg"><i class="fa-solid fa-book-open"></i></div><div class="text-xs font-bold mt-2">Books & Desk</div></button>
+          <button onclick="selectCategory('Gaming & Consoles')" class="group p-3 rounded-xl bg-slate-50 hover:bg-purple-50 border border-slate-100 text-center transition"><div class="w-10 h-10 mx-auto rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-lg"><i class="fa-solid fa-gamepad"></i></div><div class="text-xs font-bold mt-2">Gaming & Consoles</div></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="curatedSection" class="max-w-[1440px] mx-auto px-3 md:px-6 pt-5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div onclick="filterCollection('Work From Home Setup')" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-cyan-700 bg-cyan-50 px-2.5 py-0.5 rounded-full">Curated Edit</span>
+          <h3 class="font-extrabold text-base mt-2 mb-2">Work From Home Studio</h3>
+          <img src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500&q=80" alt="Work from home" class="w-full h-40 object-cover rounded-xl mb-2" />
+          <p class="text-xs text-slate-500">Ultrabooks, mechanical keyboards, desk lamps & ergonomic essentials.</p>
+        </div>
+        <div onclick="filterCollection('Streetwear & Sneakers')" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-orange-700 bg-orange-50 px-2.5 py-0.5 rounded-full">Trending Drop</span>
+          <h3 class="font-extrabold text-base mt-2 mb-2">Streetwear & Sneakers</h3>
+          <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80" alt="Streetwear sneakers" class="w-full h-40 object-cover rounded-xl mb-2" />
+          <p class="text-xs text-slate-500">Performance runners, polarized shades, chronograph watches & backpacks.</p>
+        </div>
+        <div onclick="filterCollection('Smart Home & Kitchen')" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">Home Upgrade</span>
+          <h3 class="font-extrabold text-base mt-2 mb-2">Smart Home & Kitchen</h3>
+          <img src="https://images.unsplash.com/photo-1585515320310-259814833e62?w=500&q=80" alt="Kitchen appliances" class="w-full h-40 object-cover rounded-xl mb-2" />
+          <p class="text-xs text-slate-500">Air fryers, espresso brewers, mixer grinders & smart ambient lighting.</p>
+        </div>
+        <div onclick="filterCollection('Pro Gaming & Fitness')" class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full">Active & Play</span>
+          <h3 class="font-extrabold text-base mt-2 mb-2">Pro Gaming & Fitness</h3>
+          <img src="https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=500&q=80" alt="Gaming & fitness" class="w-full h-40 object-cover rounded-xl mb-2" />
+          <p class="text-xs text-slate-500">Wireless controllers, RGB headsets, dumbbells & yoga gear.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-[1440px] mx-auto px-3 md:px-6 pt-5">
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 md:p-5 text-white shadow-md">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div class="flex items-center gap-3">
+            <span class="bg-orange-500 text-white text-xs font-black px-3 py-1 rounded-full uppercase"><i class="fa-solid fa-bolt mr-1"></i>Flash Deals</span>
+            <h2 class="text-base md:text-lg font-extrabold">Lightning Picks Under ₹4,999</h2>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-slate-300">Ends in:</span>
+            <span id="dealTimer" class="font-mono font-extrabold bg-white/10 px-2.5 py-1 rounded-lg text-cyan-300">04:59:59</span>
+          </div>
+        </div>
+        <div id="flashDealsRow" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+      </div>
+    </section>
+
+    <main id="catalogAnchor" class="max-w-[1440px] mx-auto px-3 md:px-6 py-6">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-5">
+          <div>
+            <h2 id="catalogTitle" class="text-xl font-black text-slate-900">All Collections Catalog</h2>
+            <p id="catalogSubtitle" class="text-xs text-slate-500 mt-0.5">Showing all 24 products across 8 departments</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="priceFilter" onchange="renderCatalog()" class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50">
+              <option value="all">All Prices</option>
+              <option value="under2000">Under ₹2,000</option>
+              <option value="2000to10000">₹2,000 – ₹10,000</option>
+              <option value="above10000">Above ₹10,000</option>
+            </select>
+            <select id="sortSelect" onchange="renderCatalog()" class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50">
+              <option value="featured">Sort: Featured</option>
+              <option value="low">Price: Low to High</option>
+              <option value="high">Price: High to Low</option>
+              <option value="rating">Top Rated</option>
+            </select>
+          </div>
+        </div>
+        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- PRODUCT DETAIL VIEW & MODALS -->
+  <div id="productDetailView" class="hidden flex-1 max-w-[1440px] mx-auto w-full px-3 md:px-6 py-6">
+    <button onclick="closeProductDetail()" class="text-xs text-cyan-700 font-bold hover:underline mb-4 inline-flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl shadow-sm"><i class="fa-solid fa-arrow-left"></i> Back to Collections</button>
+    <div id="productDetailContent" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"></div>
+  </div>
+
+  <footer class="mt-auto">
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs py-3 font-bold tracking-wide">Back to Top ↑</button>
+    <div class="nav-glass text-slate-300 text-xs py-8 px-4 text-center">
+      <div class="text-lg font-black text-white tracking-wider mb-1">NEXORA<span class="text-cyan-400">.in</span></div>
+      <p class="text-slate-400">8 Departments • Curated Lifestyle Collections • Full-Stack E-Commerce Platform</p>
+    </div>
+  </footer>
+
+  <div id="cartDrawer" class="fixed inset-0 bg-slate-950/60 z-50 hidden justify-end">
+    <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl">
+      <div class="p-4 nav-glass text-white flex items-center justify-between">
+        <div class="flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-cyan-400"></i><h3 class="font-bold text-base">Your Shopping Bag</h3></div>
+        <button onclick="toggleCart(false)" class="text-2xl leading-none hover:text-cyan-300">&times;</button>
+      </div>
+      <div id="cartList" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+      <div class="p-4 border-t bg-slate-50 space-y-3">
+        <div class="flex gap-2">
+          <input id="couponInput" type="text" placeholder="Promo code (try NEXORA10)" class="flex-1 border border-slate-200 rounded-xl px-3 py-1.5 text-xs uppercase bg-white" />
+          <button onclick="applyCoupon()" class="btn-cyan px-3.5 py-1.5 rounded-xl text-xs font-bold">Apply</button>
+        </div>
+        <div id="couponStatus" class="text-[11px] text-emerald-700 font-bold hidden"></div>
+        <div class="space-y-1 text-xs">
+          <div class="flex justify-between text-slate-600"><span>Subtotal:</span><span id="cartSubtotal">₹0</span></div>
+          <div id="discountRow" class="hidden justify-between text-emerald-700 font-bold"><span>Coupon Discount (10%):</span><span id="cartDiscount">-₹0</span></div>
+          <div class="flex justify-between font-black text-base text-slate-900 pt-1 border-t"><span>Total Payable:</span><span id="cartFinalTotal">₹0</span></div>
+        </div>
+        <button onclick="openCheckout()" class="w-full btn-primary py-2.5 rounded-xl font-bold text-sm shadow">Proceed to Checkout</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="checkoutModal" class="fixed inset-0 bg-slate-950/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeModal('checkoutModal')" class="absolute top-3 right-4 text-xl text-slate-400">&times;</button>
+      <h3 class="text-lg font-black border-b pb-2 mb-4">Secure Checkout — NEXORA.in</h3>
+      <form onsubmit="confirmOrder(event)" class="space-y-4 text-xs">
+        <div><label class="block font-bold mb-1">1. Delivery Address</label><input id="checkoutAddress" type="text" required class="w-full border rounded-xl px-3 py-2 text-sm" /></div>
+        <div><label class="block font-bold mb-1">2. Payment Method</label>
+          <select id="checkoutPayment" class="w-full border rounded-xl px-3 py-2 text-sm">
+            <option value="UPI (GPay / PhonePe / Paytm)">UPI (GPay / PhonePe / Paytm)</option>
+            <option value="Credit / Debit Card">Credit / Debit Card</option>
+            <option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
+          </select>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl border flex justify-between items-center text-sm font-black"><span>Final Payable:</span><span id="checkoutTotal" class="text-orange-600">₹0</span></div>
+        <button type="submit" class="w-full btn-primary py-2.5 rounded-xl font-bold text-sm">Confirm & Place Order</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="authModal" class="fixed inset-0 bg-slate-950/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+      <button onclick="closeModal('authModal')" class="absolute top-3 right-4 text-xl text-slate-400">&times;</button>
+      <h3 class="text-xl font-black mb-1">Sign In or Join NEXORA</h3>
+      <p class="text-xs text-slate-500 mb-4">Sync your wishlist, bag, and order tracking across sessions.</p>
+      <form onsubmit="submitAuth(event)" class="space-y-3">
+        <div><label class="block text-xs font-bold mb-1">Full Name</label><input id="authName" type="text" placeholder="Alex Mercer" class="w-full border rounded-xl px-3 py-2 text-sm" /></div>
+        <div><label class="block text-xs font-bold mb-1">Email Address</label><input id="authEmail" type="email" required placeholder="alex@nexora.in" class="w-full border rounded-xl px-3 py-2 text-sm" /></div>
+        <div><label class="block text-xs font-bold mb-1">Password</label><input id="authPassword" type="password" required placeholder="••••••••" class="w-full border rounded-xl px-3 py-2 text-sm" /></div>
+        <button type="submit" class="w-full btn-primary py-2.5 rounded-xl font-bold text-sm">Continue</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="wishlistModal" class="fixed inset-0 bg-slate-950/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[85vh] flex flex-col">
+      <button onclick="closeModal('wishlistModal')" class="absolute top-3 right-4 text-xl text-slate-400">&times;</button>
+      <h3 class="text-xl font-black mb-1">Saved Wishlist</h3>
+      <p class="text-xs text-slate-500 mb-4">Your favorite picks saved in the database.</p>
+      <div id="wishlistContainer" class="flex-1 overflow-y-auto space-y-3"></div>
+    </div>
+  </div>
+
+  <div id="ordersModal" class="fixed inset-0 bg-slate-950/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative max-h-[85vh] flex flex-col">
+      <button onclick="closeModal('ordersModal')" class="absolute top-3 right-4 text-xl text-slate-400">&times;</button>
+      <h3 class="text-xl font-black mb-1">Order History & Live Tracking</h3>
+      <p class="text-xs text-slate-500 mb-4">Real-time order records stored in your backend database.</p>
+      <div id="ordersContainer" class="flex-1 overflow-y-auto space-y-4"></div>
+    </div>
+  </div>
+
+  <div id="sellerModal" class="fixed inset-0 bg-slate-950/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeModal('sellerModal')" class="absolute top-3 right-4 text-xl text-slate-400">&times;</button>
+      <h3 class="text-lg font-black mb-1">NEXORA Seller Studio</h3>
+      <p class="text-xs text-slate-500 mb-4">Publish a new item to any of the 8 collections.</p>
+      <form onsubmit="publishProduct(event)" class="space-y-3 text-sm">
+        <input id="sellTitle" type="text" required placeholder="Product Title" class="w-full border rounded-xl px-3 py-2" />
+        <div class="grid grid-cols-2 gap-2">
+          <input id="sellBrand" type="text" placeholder="Brand Name" class="w-full border rounded-xl px-3 py-2" />
+          <select id="sellCategory" class="w-full border rounded-xl px-3 py-2">
+            <option value="Mobiles & Tablets">Mobiles & Tablets</option>
+            <option value="Laptops & Audio">Laptops & Audio</option>
+            <option value="Fashion & Sneakers">Fashion & Sneakers</option>
+            <option value="Home & Kitchen">Home & Kitchen</option>
+            <option value="Beauty & Grooming">Beauty & Grooming</option>
+            <option value="Fitness & Sports">Fitness & Sports</option>
+            <option value="Books & Desk">Books & Desk</option>
+            <option value="Gaming & Consoles">Gaming & Consoles</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="sellPrice" type="number" required placeholder="Offer Price (₹)" class="w-full border rounded-xl px-3 py-2" />
+          <input id="sellMrp" type="number" placeholder="MRP (₹)" class="w-full border rounded-xl px-3 py-2" />
+        </div>
+        <input id="sellImage" type="url" placeholder="Image URL (optional)" class="w-full border rounded-xl px-3 py-2" />
+        <input id="sellHighlight" type="text" placeholder="Key Product Feature" class="w-full border rounded-xl px-3 py-2" />
+        <button type="submit" class="w-full btn-cyan py-2.5 rounded-xl font-bold">Publish to Catalog</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="serverDrawer" class="fixed bottom-4 right-4 z-50 hidden w-[92vw] max-w-lg bg-slate-950 text-slate-100 rounded-2xl shadow-2xl border border-cyan-500/40 overflow-hidden">
+    <div class="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2 font-bold text-cyan-400"><i class="fa-solid fa-server"></i><span>NEXORA REST API & JSON Database Inspector</span></div>
+      <button onclick="toggleServerDrawer()" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+    </div>
+    <div class="p-3 space-y-2 text-[11px]">
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="bg-slate-900 p-2 rounded-xl border border-slate-800"><div class="text-slate-400">Products DB</div><div id="dbProdStat" class="text-sm font-black text-cyan-400">24</div></div>
+        <div class="bg-slate-900 p-2 rounded-xl border border-slate-800"><div class="text-slate-400">Users DB</div><div id="dbUserStat" class="text-sm font-black text-emerald-400">0</div></div>
+        <div class="bg-slate-900 p-2 rounded-xl border border-slate-800"><div class="text-slate-400">Orders DB</div><div id="dbOrderStat" class="text-sm font-black text-orange-400">0</div></div>
+      </div>
+      <div class="text-slate-400 font-bold">Live REST API Traffic Log:</div>
+      <div id="apiLogBox" class="h-32 overflow-y-auto bg-black/60 rounded-xl p-2.5 font-mono text-[10px] space-y-1 text-emerald-300"></div>
+    </div>
+  </div>
+  <script>
+    const SEED_PRODUCTS = [
+      { id: 1, title: "OnePlus Nord CE 4 Lite 5G (8GB RAM, 128GB, Super Silver)", brand: "OnePlus", category: "Mobiles & Tablets", collection: "Smart Home & Kitchen", price: 19999, mrp: 22999, rating: 4.5, reviewsCount: 8942, flashDeal: false, variants: ["128GB • Silver", "256GB • Mega Blue"], image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=80", highlights: ["5500 mAh battery with 80W SUPERVOOC fast charging", "50MP Sony LYT-600 OIS main camera", "120Hz AMOLED display"], reviews: [{ user: "Rohan M.", rating: 5, date: "18 Nov 2026", comment: "Super smooth 120Hz screen and fast charging." }] },
+      { id: 2, title: "Samsung Galaxy Tab S9 FE 10.9-inch WQXGA Wi-Fi Tablet (6GB/128GB)", brand: "Samsung", category: "Mobiles & Tablets", collection: "Work From Home Setup", price: 34999, mrp: 44999, rating: 4.6, reviewsCount: 4120, flashDeal: false, variants: ["Gray", "Mint"], image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&q=80", highlights: ["Includes S Pen in the box", "IP68 water & dust resistant metal design", "90Hz vivid display"], reviews: [] },
+      { id: 3, title: "Nothing Phone (2a) Plus 5G (Metallic Grey, 8GB/256GB)", brand: "Nothing", category: "Mobiles & Tablets", collection: "Streetwear & Sneakers", price: 25999, mrp: 29999, rating: 4.4, reviewsCount: 3890, flashDeal: false, variants: ["Metallic Grey", "Black"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&q=80", highlights: ["Signature Glyph Interface LED notifications", "Dual 50MP rear cameras + 50MP front camera", "Clean Nothing OS"], reviews: [] },
+      { id: 4, title: "ASUS Vivobook 15 Intel Core i5 13th Gen (16GB RAM/512GB SSD)", brand: "ASUS", category: "Laptops & Audio", collection: "Work From Home Setup", price: 48990, mrp: 64990, rating: 4.4, reviewsCount: 3180, flashDeal: false, variants: ["16GB / 512GB", "16GB / 1TB"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=80", highlights: ["13th Gen Intel Core i5 processor", "15.6-inch FHD Anti-Glare display", "Backlit chiclet keyboard"], reviews: [] },
+      { id: 5, title: "Sony WH-CH720N Wireless Active Noise Cancelling Headphones", brand: "Sony", category: "Laptops & Audio", collection: "Work From Home Setup", price: 8990, mrp: 14990, rating: 4.6, reviewsCount: 5320, flashDeal: false, variants: ["Black", "Navy Blue", "White"], image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80", highlights: ["Ultra-lightweight 192g design", "Integrated Processor V1 ANC", "35 hours battery life"], reviews: [] },
+      { id: 6, title: "Noise ColorFit Pro 5 AMOLED Bluetooth Calling Smartwatch", brand: "Noise", category: "Laptops & Audio", collection: "Pro Gaming & Fitness", price: 3499, mrp: 6999, rating: 4.4, reviewsCount: 12840, flashDeal: true, variants: ["Jet Black", "Champagne Gold"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80", highlights: ["1.85-inch Always-On AMOLED Display", "100+ sports modes", "IP68 water resistance"], reviews: [] },
+      { id: 7, title: "Nike Revolution 7 Men's Lightweight Road Running Sneakers", brand: "Nike", category: "Fashion & Sneakers", collection: "Streetwear & Sneakers", price: 3195, mrp: 3695, rating: 4.4, reviewsCount: 4110, flashDeal: true, variants: ["UK 8", "UK 9", "UK 10"], image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80", highlights: ["Soft foam cushioned midsole", "Breathable engineered mesh upper", "Durable rubber traction"], reviews: [] },
+      { id: 8, title: "Urban Edge Polarized Aviator UV400 Metal Sunglasses", brand: "Urban Edge", category: "Fashion & Sneakers", collection: "Streetwear & Sneakers", price: 1499, mrp: 3299, rating: 4.3, reviewsCount: 2450, flashDeal: true, variants: ["Matte Black / Smoke", "Gold / Green"], image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&q=80", highlights: ["100% UV400 polarized glare protection", "Lightweight stainless steel frame"], reviews: [] },
+      { id: 9, title: "Vanguard 30L Water-Resistant Laptop & Travel Backpack", brand: "Vanguard", category: "Fashion & Sneakers", collection: "Streetwear & Sneakers", price: 1899, mrp: 3999, rating: 4.5, reviewsCount: 6210, flashDeal: false, variants: ["Charcoal Grey", "Midnight Navy"], image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80", highlights: ["Padded 16-inch laptop compartment", "Built-in USB charging pass-through port"], reviews: [] },
+      { id: 10, title: "Pigeon Healthifry Digital Air Fryer 4.2L (1200W, 360° Air Crisp)", brand: "Pigeon", category: "Home & Kitchen", collection: "Smart Home & Kitchen", price: 2799, mrp: 5995, rating: 4.3, reviewsCount: 16400, flashDeal: true, variants: ["4.2 Litres"], image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=600&q=80", highlights: ["Uses up to 85% less oil", "Digital LED touch screen with 8 presets"], reviews: [] },
+      { id: 11, title: "Prestige Iris Plus 750W Mixer Grinder with 4 Jars", brand: "Prestige", category: "Home & Kitchen", collection: "Smart Home & Kitchen", price: 3299, mrp: 5495, rating: 4.2, reviewsCount: 21500, flashDeal: false, variants: ["750W Standard"], image: "https://images.unsplash.com/photo-1585515320310-259814833e62?w=600&q=80", highlights: ["750W heavy-duty motor", "3 stainless steel jars + 1 juicer jar"], reviews: [] },
+      { id: 12, title: "BaristaBrew 15-Bar Espresso & Cappuccino Coffee Maker", brand: "BaristaBrew", category: "Home & Kitchen", collection: "Smart Home & Kitchen", price: 7499, mrp: 11999, rating: 4.6, reviewsCount: 1940, flashDeal: false, variants: ["Brushed Steel"], image: "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=600&q=80", highlights: ["15-bar high-pressure Italian pump", "Built-in milk frother steam wand"], reviews: [] },
+      { id: 13, title: "AquaGlow Hyaluronic Acid & Vitamin C Hydrating Serum (30ml)", brand: "AquaGlow", category: "Beauty & Grooming", collection: "Smart Home & Kitchen", price: 649, mrp: 999, rating: 4.5, reviewsCount: 7820, flashDeal: false, variants: ["30ml Dropper"], image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&q=80", highlights: ["Deep 24-hour skin hydration", "Dermatologically tested & fragrance-free"], reviews: [] },
+      { id: 14, title: "Noir Elixir Eau De Parfum Long-Lasting Woody Citrus (100ml)", brand: "Noir", category: "Beauty & Grooming", collection: "Streetwear & Sneakers", price: 2199, mrp: 3499, rating: 4.6, reviewsCount: 3110, flashDeal: false, variants: ["100ml EDP"], image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=600&q=80", highlights: ["12-hour projection with bergamot & cedarwood notes", "Crafted glass bottle"], reviews: [] },
+      { id: 15, title: "AeroStyle Ionic Ceramic Fast-Dry Hair Dryer (2000W)", brand: "AeroStyle", category: "Beauty & Grooming", collection: "Smart Home & Kitchen", price: 1799, mrp: 2999, rating: 4.4, reviewsCount: 4520, flashDeal: false, variants: ["Matte Rose Gold", "Obsidian Black"], image: "https://images.unsplash.com/photo-1522338140262-f46f5913618a?w=600&q=80", highlights: ["Negative ion frizz-control technology", "3 heat + 2 speed settings with cool shot"], reviews: [] },
+      { id: 16, title: "IronCore Hex Rubber Coated Dumbbell Pair (5kg x 2 = 10kg)", brand: "IronCore", category: "Fitness & Sports", collection: "Pro Gaming & Fitness", price: 1699, mrp: 2899, rating: 4.6, reviewsCount: 5490, flashDeal: false, variants: ["5kg Pair (10kg)", "7.5kg Pair (15kg)"], image: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80", highlights: ["Anti-roll hexagonal rubber heads", "Knurled chrome ergonomic grip"], reviews: [] },
+      { id: 17, title: "ZenFlex 6mm High-Density TPE Anti-Slip Yoga & Workout Mat", brand: "ZenFlex", category: "Fitness & Sports", collection: "Pro Gaming & Fitness", price: 899, mrp: 1799, rating: 4.5, reviewsCount: 8310, flashDeal: false, variants: ["Teal Blue", "Charcoal"], image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=600&q=80", highlights: ["Dual-layer sweat-resistant grip", "Includes free carry strap"], reviews: [] },
+      { id: 18, title: "HydroPulse Insulated Stainless Steel Gym Bottle (1000ml)", brand: "HydroPulse", category: "Fitness & Sports", collection: "Pro Gaming & Fitness", price: 749, mrp: 1299, rating: 4.4, reviewsCount: 3920, flashDeal: false, variants: ["1000ml Matte Black", "1000ml Cyan"], image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80", highlights: ["Keeps drinks ice-cold for 24 hours", "Leak-proof flip straw lid"], reviews: [] },
+      { id: 19, title: "Atomic Habits by James Clear (International Bestseller Paperback)", brand: "Penguin", category: "Books & Desk", collection: "Work From Home Setup", price: 499, mrp: 799, rating: 4.8, reviewsCount: 94210, flashDeal: false, variants: ["Paperback", "Hardcover"], image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&q=80", highlights: ["#1 New York Times Bestseller", "Actionable system for building good habits"], reviews: [] },
+      { id: 20, title: "KeyForge K2 Wireless Mechanical Keyboard (75% Layout, RGB Backlit)", brand: "KeyForge", category: "Books & Desk", collection: "Work From Home Setup", price: 5499, mrp: 7999, rating: 4.7, reviewsCount: 2890, flashDeal: false, variants: ["Brown Tactile Switch", "Red Linear Switch"], image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&q=80", highlights: ["Hot-swappable mechanical switches", "Connects up to 3 devices via Bluetooth 5.1 or USB-C"], reviews: [] },
+      { id: 21, title: "Lumina Architect LED Desk Lamp with Wireless Phone Charger", brand: "Lumina", category: "Books & Desk", collection: "Work From Home Setup", price: 2199, mrp: 3699, rating: 4.5, reviewsCount: 1740, flashDeal: false, variants: ["Matte Silver", "Space Black"], image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&q=80", highlights: ["5 color temperature modes & eye-care dimming", "Built-in 10W Qi wireless charging pad"], reviews: [] },
+      { id: 22, title: "DualSense Wireless Gaming Controller (Cosmic Red Edition)", brand: "PlayStation", category: "Gaming & Consoles", collection: "Pro Gaming & Fitness", price: 5990, mrp: 6590, rating: 4.8, reviewsCount: 11200, flashDeal: false, variants: ["Cosmic Red", "Midnight Black", "White"], image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&q=80", highlights: ["Haptic feedback & adaptive triggers", "Compatible with PS5, PC & Mobile"], reviews: [] },
+      { id: 23, title: "HyperStrike 7.1 Surround Sound RGB Gaming Headset with Mic", brand: "HyperStrike", category: "Gaming & Consoles", collection: "Pro Gaming & Fitness", price: 3299, mrp: 5499, rating: 4.5, reviewsCount: 4610, flashDeal: false, variants: ["Black / Cyan RGB"], image: "https://images.unsplash.com/photo-1599669454699-248893623440?w=600&q=80", highlights: ["50mm neodymium drivers", "Detachable noise-cancelling boom mic"], reviews: [] },
+      { id: 24, title: "Vortex Pro 16,000 DPI Ultralight Honeycomb Wireless Gaming Mouse", brand: "Vortex", category: "Gaming & Consoles", collection: "Pro Gaming & Fitness", price: 2499, mrp: 4299, rating: 4.6, reviewsCount: 3340, flashDeal: false, variants: ["Obsidian Black", "Arctic White"], image: "https://images.unsplash.com/photo-1527814050087-3793815479db?w=600&q=80", highlights: ["63g ultralight honeycomb shell", "Lag-free 2.4GHz wireless + braided USB-C"], reviews: [] }
+    ];
+
+    const HERO_SLIDES = [
+      { badge: "Season Mega Showcase", title: "Next-Gen Flagship Tech & Audio Up to 50% Off", subtitle: "Use code NEXORA10 at checkout for an extra 10% instant discount across all 8 collections.", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80", bg: "from-[#0f172a] via-[#1e1b4b] to-[#0e7490]" },
+      { badge: "Pro Gaming & Fitness", title: "Level Up Your Setup & Home Gym Essentials", subtitle: "Controllers, mechanical keyboards, smartwatches & workout gear with Express Delivery.", img: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600&q=80", bg: "from-[#111827] via-[#311042] to-[#be185d]" },
+      { badge: "Curated Home & Lifestyle", title: "Smart Kitchen Appliances & Everyday Streetwear", subtitle: "Upgrade your daily routine with air fryers, espresso makers, sneakers & fragrances.", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80", bg: "from-[#064e3b] via-[#0f766e] to-[#0284c7]" }
+    ];
+
+    const BackendAPI = {
+      logs: [],
+      log(method, endpoint, status, detail) {
+        this.logs.unshift(`[${new Date().toLocaleTimeString()}] ${method} ${endpoint} → ${status} (${detail})`);
+        if (this.logs.length > 30) this.logs.pop();
+        this.renderStats();
+      },
+      readDB() {
+        const raw = localStorage.getItem('nexora_fullstack_db');
+        if (raw) return JSON.parse(raw);
+        const init = { products: SEED_PRODUCTS, users: [], orders: [], wishlist: [1, 7] };
+        localStorage.setItem('nexora_fullstack_db', JSON.stringify(init));
+        return init;
+      },
+      writeDB(db) { localStorage.setItem('nexora_fullstack_db', JSON.stringify(db)); this.renderStats(); },
+      renderStats() {
+        const db = this.readDB();
+        const pEl = document.getElementById('dbProdStat');
+        if (pEl) {
+          pEl.textContent = db.products.length;
+          document.getElementById('dbUserStat').textContent = db.users.length;
+          document.getElementById('dbOrderStat').textContent = db.orders.length;
+          document.getElementById('apiLogBox').innerHTML = this.logs.map(l => `<div>${l}</div>`).join('');
+        }
+      },
+      getProducts(filters = {}) {
+        const db = this.readDB();
+        let list = [...db.products];
+        if (filters.category && filters.category !== 'All') list = list.filter(p => p.category === filters.category);
+        if (filters.collection) list = list.filter(p => p.collection === filters.collection);
+        if (filters.flashOnly) list = list.filter(p => p.flashDeal);
+        if (filters.search) {
+          const q = filters.search.toLowerCase();
+          list = list.filter(p => p.title.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+        }
+        this.log('GET', '/api/products', '200 OK', `${list.length} records`);
+        return list;
+      },
+      createProduct(payload) {
+        const db = this.readDB();
+        const item = { id: Date.now(), title: payload.title, brand: payload.brand || 'NEXORA Studio', category: payload.category, collection: 'Work From Home Setup', price: Number(payload.price), mrp: Number(payload.mrp) || Number(payload.price) + 1200, rating: 4.8, reviewsCount: 1, flashDeal: true, variants: ['Standard Edition'], image: payload.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80', highlights: [payload.highlight || 'Verified listing on NEXORA.in'], reviews: [] };
+        db.products.unshift(item); this.writeDB(db);
+        this.log('POST', '/api/products', '201 CREATED', item.title.slice(0, 22));
+        return item;
+      },
+      addReview(productId, review) {
+        const db = this.readDB();
+        const prod = db.products.find(p => p.id === productId);
+        if (!prod) return null;
+        prod.reviews.unshift({ user: review.user || 'Verified Buyer', rating: Number(review.rating), date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }), comment: review.comment });
+        prod.reviewsCount += 1; this.writeDB(db);
+        this.log('POST', `/api/products/${productId}/reviews`, '201 CREATED', 'Review saved');
+        return prod;
+      },
+      toggleWishlist(productId) {
+        const db = this.readDB();
+        const idx = db.wishlist.indexOf(productId);
+        if (idx === -1) db.wishlist.push(productId); else db.wishlist.splice(idx, 1);
+        this.writeDB(db); this.log('PATCH', '/api/wishlist', '200 OK', `${db.wishlist.length} saved`);
+        return db.wishlist;
+      },
+      auth(name, email, password) {
+        const db = this.readDB();
+        let user = db.users.find(u => u.email === email.toLowerCase());
+        if (user) { if (user.password !== password) { this.log('POST', '/api/auth', '401 UNAUTHORIZED', 'Invalid password'); return { error: 'Incorrect password.' }; } }
+        else { user = { name: name || email.split('@')[0], email: email.toLowerCase(), password }; db.users.push(user); this.writeDB(db); }
+        this.log('POST', '/api/auth', '200 OK', `Session: ${user.email}`);
+        return { user: { name: user.name, email: user.email } };
+      },
+      placeOrder(orderData) {
+        const db = this.readDB();
+        const order = { orderId: 'NX-' + Math.floor(100000 + Math.random() * 900000), ...orderData, date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) };
+        db.orders.unshift(order); this.writeDB(db);
+        this.log('POST', '/api/orders', '201 CREATED', order.orderId);
+        return order;
+      },
+      getOrders(email) {
+        const db = this.readDB();
+        const list = email ? db.orders.filter(o => o.userEmail === email) : db.orders;
+        this.log('GET', '/api/orders', '200 OK', `${list.length} orders`);
+        return list;
+      }
+    };
+
+    let slideIndex = 0, currentList = [], cart = JSON.parse(localStorage.getItem('nx_cart') || '[]'), currentUser = JSON.parse(localStorage.getItem('nx_user') || 'null'), couponApplied = false, selectedVariant = '';
+
+    function renderHero() {
+      const s = HERO_SLIDES[slideIndex];
+      document.getElementById('heroBanner').className = `min-h-[250px] md:min-h-[320px] bg-gradient-to-r ${s.bg} text-white p-6 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6 transition-all`;
+      document.getElementById('heroBadge').textContent = s.badge;
+      document.getElementById('heroTitle').textContent = s.title;
+      document.getElementById('heroSubtitle').textContent = s.subtitle;
+      document.getElementById('heroImg').src = s.img;
+    }
+    function nextSlide() { slideIndex = (slideIndex + 1) % HERO_SLIDES.length; renderHero(); }
+    function prevSlide() { slideIndex = (slideIndex - 1 + HERO_SLIDES.length) % HERO_SLIDES.length; renderHero(); }
+    setInterval(nextSlide, 6500);
+
+    let dealSeconds = 17999;
+    setInterval(() => {
+      if (dealSeconds > 0) dealSeconds--;
+      const h = String(Math.floor(dealSeconds / 3600)).padStart(2, '0'), m = String(Math.floor((dealSeconds % 3600) / 60)).padStart(2, '0'), s = String(dealSeconds % 60).padStart(2, '0');
+      const el = document.getElementById('dealTimer');
+      if (el) el.textContent = `${h}:${m}:${s}`;
+    }, 1000);
+
+    function renderFlashDeals() {
+      const deals = BackendAPI.getProducts({ flashOnly: true }).slice(0, 4);
+      document.getElementById('flashDealsRow').innerHTML = deals.map(p => {
+        const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+        return `<div onclick="openProductDetail(${p.id})" class="bg-white/10 hover:bg-white/15 border border-white/15 rounded-xl p-3 flex items-center gap-3 cursor-pointer transition"><img src="${p.image}" alt="${p.title}" class="w-16 h-16 rounded-lg object-cover bg-white shrink-0" /><div class="min-w-0 flex-1"><span class="bg-rose-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">${off}% OFF</span><div class="text-xs font-bold text-white truncate mt-1">${p.title}</div><div class="mt-0.5"><span class="text-sm font-black text-cyan-300">₹${p.price.toLocaleString('en-IN')}</span><span class="text-[11px] text-slate-400 line-through ml-1">₹${p.mrp.toLocaleString('en-IN')}</span></div></div></div>`;
+      }).join('');
+    }
+
+    function renderCatalog() {
+      const db = BackendAPI.readDB(), wishlist = db.wishlist;
+      document.getElementById('wishBadge').textContent = wishlist.length;
+      const priceRange = document.getElementById('priceFilter').value, sort = document.getElementById('sortSelect').value;
+      let filtered = [...currentList];
+      if (priceRange === 'under2000') filtered = filtered.filter(p => p.price < 2000);
+      if (priceRange === '2000to10000') filtered = filtered.filter(p => p.price >= 2000 && p.price <= 10000);
+      if (priceRange === 'above10000') filtered = filtered.filter(p => p.price > 10000);
+      if (sort === 'low') filtered.sort((a, b) => a.price - b.price);
+      if (sort === 'high') filtered.sort((a, b) => b.price - a.price);
+      if (sort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
+      document.getElementById('catalogSubtitle').textContent = `Showing ${filtered.length} curated items`;
+      const grid = document.getElementById('productsGrid');
+      if (filtered.length === 0) { grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500 text-sm">No items match these filters.</div>`; return; }
+      grid.innerHTML = filtered.map(p => {
+        const off = Math.round(((p.mrp - p.price) / p.mrp) * 100), isWished = wishlist.includes(p.id);
+        return `<div class="group border border-slate-100 rounded-2xl p-4 flex flex-col justify-between bg-white hover:shadow-lg hover:border-cyan-200 transition relative"><button onclick="handleWishlist(${p.id})" class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center"><i class="${isWished ? 'fa-solid text-rose-500' : 'fa-regular text-slate-400'} fa-heart text-sm"></i></button><div onclick="openProductDetail(${p.id})" class="cursor-pointer"><div class="h-44 bg-slate-50 rounded-xl flex items-center justify-center p-3 mb-3 overflow-hidden relative">${p.flashDeal ? `<span class="absolute top-2 left-2 bg-orange-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">Flash Deal</span>` : ''}<img src="${p.image}" alt="${p.title}" class="max-h-full object-contain group-hover:scale-105 transition duration-300" /></div><div class="flex items-center justify-between text-[11px]"><span class="font-bold text-cyan-700">${p.brand}</span><span class="text-slate-400">${p.category}</span></div><h3 class="text-sm font-bold text-slate-900 group-hover:text-indigo-700 line-clamp-2 mt-1">${p.title}</h3><div class="flex items-center gap-1.5 text-xs mt-1.5"><span class="bg-emerald-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded">★ ${p.rating}</span><span class="text-slate-400 text-[11px]">(${p.reviewsCount.toLocaleString()})</span></div><div class="mt-2.5 flex items-baseline gap-1.5"><span class="text-lg font-black text-slate-900">₹${p.price.toLocaleString('en-IN')}</span><span class="text-xs text-slate-400 line-through">₹${p.mrp.toLocaleString('en-IN')}</span>${off > 0 ? `<span class="text-xs font-extrabold text-emerald-600">${off}% off</span>` : ''}</div></div><button onclick="addToCart(${p.id})" class="mt-3.5 w-full btn-primary py-2 rounded-xl text-xs font-bold shadow-sm">Add to Bag</button></div>`;
+      }).join('');
+    }
+
+    function openProductDetail(id) {
+      const p = BackendAPI.readDB().products.find(item => item.id === id);
+      if (!p) return;
+      selectedVariant = p.variants[0] || 'Standard';
+      const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+      document.getElementById('homeView').classList.add('hidden');
+      document.getElementById('productDetailView').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('productDetailContent').innerHTML = `<div class="grid grid-cols-1 md:grid-cols-12 gap-8"><div class="md:col-span-5 bg-slate-50 rounded-2xl p-6 flex items-center justify-center"><img src="${p.image}" alt="${p.title}" class="max-h-80 object-contain" /></div><div class="md:col-span-4 space-y-3"><span class="inline-block bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full">${p.category} • ${p.brand}</span><h1 class="text-xl font-black leading-snug text-slate-900">${p.title}</h1><div class="flex items-center gap-2 text-xs border-b border-slate-100 pb-3"><span class="bg-emerald-600 text-white font-bold px-2 py-0.5 rounded">★ ${p.rating}</span><span class="text-slate-500">${p.reviewsCount.toLocaleString()} verified ratings</span></div><div><div class="flex items-baseline gap-2"><span class="text-3xl font-black text-slate-900">₹${p.price.toLocaleString('en-IN')}</span><span class="text-sm text-slate-400 line-through">₹${p.mrp.toLocaleString('en-IN')}</span>${off > 0 ? `<span class="text-sm font-extrabold text-emerald-600">${off}% OFF</span>` : ''}</div><div class="text-[11px] text-slate-500 mt-0.5">Eligible for coupon <strong>NEXORA10</strong></div></div><div><div class="text-xs font-bold mb-1.5">Select Variant:</div><div class="flex flex-wrap gap-2">${p.variants.map((v, i) => `<button onclick="selectVar(this, '${v}')" class="var-btn px-3 py-1.5 text-xs border rounded-xl ${i === 0 ? 'border-cyan-600 bg-cyan-50 text-cyan-900 font-bold' : 'border-slate-200'}">${v}</button>`).join('')}</div></div><div class="pt-2"><div class="text-xs font-bold mb-1.5">Key Highlights:</div><ul class="list-disc pl-5 text-xs text-slate-600 space-y-1">${p.highlights.map(h => `<li>${h}</li>`).join('')}</ul></div></div><div class="md:col-span-3 border border-slate-200 rounded-2xl p-5 h-fit space-y-3 bg-slate-50/60"><div class="text-2xl font-black">₹${p.price.toLocaleString('en-IN')}</div><div class="text-xs text-cyan-700 font-semibold"><i class="fa-solid fa-truck-fast mr-1"></i>FREE Express Delivery by Tomorrow</div><div class="text-xs font-bold text-emerald-600">In Stock & Ready to Ship</div><button onclick="addToCart(${p.id}, true)" class="w-full btn-primary py-2.5 rounded-xl text-xs font-bold shadow">Add to Bag</button><button onclick="buyNow(${p.id})" class="w-full btn-cyan py-2.5 rounded-xl text-xs font-bold shadow">Buy Now</button></div></div><div class="mt-8 pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-8"><div class="md:col-span-4"><h3 class="font-black text-base mb-2">Write a Review</h3><form onsubmit="submitReview(event, ${p.id})" class="space-y-2.5 text-xs"><select id="revRating" class="w-full border rounded-xl px-3 py-2 bg-slate-50"><option value="5">★★★★★ (5 Stars)</option><option value="4">★★★★☆ (4 Stars)</option><option value="3">★★★☆☆ (3 Stars)</option></select><textarea id="revComment" required rows="3" placeholder="Share your experience..." class="w-full border rounded-xl p-3"></textarea><button type="submit" class="btn-primary px-5 py-2 rounded-xl font-bold">Post Review</button></form></div><div class="md:col-span-8"><h3 class="font-black text-base mb-3">Customer Reviews (${p.reviews.length})</h3><div class="space-y-3">${p.reviews.length === 0 ? '<p class="text-xs text-slate-500">No written reviews yet.</p>' : p.reviews.map(r => `<div class="border border-slate-100 rounded-xl p-3.5 bg-slate-50/50 text-xs"><div class="flex justify-between font-bold"><span>${r.user}</span><span class="text-slate-400 font-normal">${r.date}</span></div><div class="text-amber-500 font-bold my-1">${'★'.repeat(r.rating)} <span class="text-emerald-700 ml-1">Verified Purchase</span></div><p class="text-slate-700">${r.comment}</p></div>`).join('')}</div></div></div>`;
+    }
+
+    function selectVar(btn, val) { selectedVariant = val; document.querySelectorAll('.var-btn').forEach(b => b.className = 'var-btn px-3 py-1.5 text-xs border rounded-xl border-slate-200'); btn.className = 'var-btn px-3 py-1.5 text-xs border rounded-xl border-cyan-600 bg-cyan-50 text-cyan-900 font-bold'; }
+    function closeProductDetail() { document.getElementById('productDetailView').classList.add('hidden'); document.getElementById('homeView').classList.remove('hidden'); }
+    function submitReview(e, id) { e.preventDefault(); BackendAPI.addReview(id, { user: currentUser ? currentUser.name : 'NEXORA Shopper', rating: document.getElementById('revRating').value, comment: document.getElementById('revComment').value.trim() }); openProductDetail(id); }
+    function handleWishlist(id) { BackendAPI.toggleWishlist(id); renderCatalog(); }
+    function openWishlist() {
+      openModal('wishlistModal'); const db = BackendAPI.readDB(); const items = db.products.filter(p => db.wishlist.includes(p.id)); const box = document.getElementById('wishlistContainer');
+      if (items.length === 0) { box.innerHTML = `<div class="text-center text-slate-500 text-sm py-8">Your wishlist is empty.</div>`; return; }
+      box.innerHTML = items.map(p => `<div class="flex items-center gap-3 border rounded-xl p-3"><img src="${p.image}" alt="${p.title}" class="w-14 h-14 object-contain bg-slate-50 rounded-lg" /><div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">${p.title}</div><div class="text-sm font-black text-slate-900 mt-0.5">₹${p.price.toLocaleString('en-IN')}</div></div><button onclick="addToCart(${p.id}); closeModal('wishlistModal')" class="btn-primary px-3 py-1.5 rounded-xl text-xs font-bold">Move to Bag</button></div>`).join('');
+    }
+    function goHome() { closeProductDetail(); document.getElementById('categorySelect').value = 'All'; document.getElementById('searchInput').value = ''; document.getElementById('priceFilter').value = 'all'; document.getElementById('catalogTitle').textContent = 'All Collections Catalog'; currentList = BackendAPI.getProducts(); renderCatalog(); }
+    function selectCategory(cat) { closeProductDetail(); document.getElementById('categorySelect').value = cat; document.getElementById('catalogTitle').textContent = `${cat} Collection`; currentList = BackendAPI.getProducts({ category: cat }); renderCatalog(); scrollToCatalog(); }
+    function filterCollection(colName) { closeProductDetail(); document.getElementById('catalogTitle').textContent = colName; currentList = BackendAPI.getProducts({ collection: colName }); renderCatalog(); scrollToCatalog(); }
+    function filterFlashDeals() { closeProductDetail(); document.getElementById('catalogTitle').textContent = 'Flash Deals — Limited Time Offers'; currentList = BackendAPI.getProducts({ flashOnly: true }); renderCatalog(); scrollToCatalog(); }
+    function handleSearch(e) { e.preventDefault(); closeProductDetail(); const cat = document.getElementById('categorySelect').value, search = document.getElementById('searchInput').value.trim(); document.getElementById('catalogTitle').textContent = search ? `Search results for "${search}"` : (cat === 'All' ? 'All Collections Catalog' : cat); currentList = BackendAPI.getProducts({ category: cat, search }); renderCatalog(); scrollToCatalog(); }
+    function applyFilters() { const cat = document.getElementById('categorySelect').value; if (cat === 'All') goHome(); else selectCategory(cat); }
+    function scrollToCatalog() { document.getElementById('catalogAnchor').scrollIntoView({ behavior: 'smooth' }); }
+    function addToCart(id, useSelected = false) { const p = BackendAPI.readDB().products.find(item => item.id === id); if (!p) return; const variant = useSelected ? selectedVariant : (p.variants[0] || 'Standard'); const existing = cart.find(c => c.id === id && c.variant === variant); if (existing) existing.qty += 1; else cart.push({ id: p.id, title: p.title, price: p.price, image: p.image, variant, qty: 1 }); saveCart(); toggleCart(true); }
+    function buyNow(id) { addToCart(id, true); toggleCart(false); openCheckout(); }
+    function updateQty(idx, delta) { cart[idx].qty += delta; if (cart[idx].qty <= 0) cart.splice(idx, 1); saveCart(); }
+    function applyCoupon() { const code = document.getElementById('couponInput').value.trim().toUpperCase(), status = document.getElementById('couponStatus'); if (code === 'NEXORA10') { couponApplied = true; status.textContent = 'Coupon NEXORA10 applied! 10% savings unlocked.'; status.className = 'text-[11px] text-emerald-700 font-bold block'; } else { couponApplied = false; status.textContent = 'Invalid code. Try NEXORA10.'; status.className = 'text-[11px] text-rose-600 font-bold block'; } renderCart(); }
+    function getTotals() { const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0), discount = couponApplied ? Math.round(subtotal * 0.1) : 0; return { subtotal, discount, finalTotal: subtotal - discount }; }
+    function saveCart() { localStorage.setItem('nx_cart', JSON.stringify(cart)); renderCart(); }
+    function renderCart() {
+      const count = cart.reduce((s, i) => s + i.qty, 0), { subtotal, discount, finalTotal } = getTotals();
+      document.getElementById('cartBadge').textContent = count; document.getElementById('cartSubtotal').textContent = `₹${subtotal.toLocaleString('en-IN')}`; document.getElementById('cartFinalTotal').textContent = `₹${finalTotal.toLocaleString('en-IN')}`;
+      const discRow = document.getElementById('discountRow');
+      if (discount > 0) { discRow.classList.replace('hidden', 'flex'); document.getElementById('cartDiscount').textContent = `-₹${discount.toLocaleString('en-IN')}`; } else { discRow.classList.replace('flex', 'hidden'); }
+      const list = document.getElementById('cartList');
+      if (cart.length === 0) { list.innerHTML = `<div class="text-center text-slate-500 text-sm py-12">Your NEXORA shopping bag is empty.</div>`; return; }
+      list.innerHTML = cart.map((item, i) => `<div class="flex gap-3 border border-slate-100 rounded-xl p-3 bg-slate-50/50"><img src="${item.image}" alt="${item.title}" class="w-16 h-16 object-contain bg-white rounded-lg p-1" /><div class="flex-1 min-w-0"><div class="text-xs font-bold line-clamp-2">${item.title}</div><div class="text-[11px] text-slate-500">Variant: ${item.variant}</div><div class="text-sm font-black mt-1">₹${item.price.toLocaleString('en-IN')}</div><div class="flex items-center gap-2 mt-1.5"><button onclick="updateQty(${i}, -1)" class="w-6 h-6 bg-slate-200 rounded-lg text-xs font-bold">-</button><span class="text-xs font-bold">${item.qty}</span><button onclick="updateQty(${i}, 1)" class="w-6 h-6 bg-slate-200 rounded-lg text-xs font-bold">+</button></div></div></div>`).join('');
+    }
+    function toggleCart(show) { const d = document.getElementById('cartDrawer'); d.classList.toggle('hidden', !show); d.classList.toggle('flex', show); if (show) renderCart(); }
+    function openCheckout() { if (cart.length === 0) return alert('Your bag is empty.'); toggleCart(false); document.getElementById('checkoutTotal').textContent = `₹${getTotals().finalTotal.toLocaleString('en-IN')}`; document.getElementById('checkoutAddress').value = document.getElementById('locationText').textContent; openModal('checkoutModal'); }
+    function confirmOrder(e) { e.preventDefault(); const order = BackendAPI.placeOrder({ userEmail: currentUser ? currentUser.email : 'guest@nexora.in', items: [...cart], totalAmount: getTotals().finalTotal, paymentMethod: document.getElementById('checkoutPayment').value, address: document.getElementById('checkoutAddress').value }); cart = []; couponApplied = false; saveCart(); closeModal('checkoutModal'); alert(`Order Placed Successfully!\nOrder ID: ${order.orderId}`); openOrders(); }
+    function openOrders() {
+      openModal('ordersModal'); const orders = BackendAPI.getOrders(currentUser ? currentUser.email : ''); const container = document.getElementById('ordersContainer');
+      if (orders.length === 0) { container.innerHTML = `<div class="text-center text-slate-500 text-sm py-8">No orders placed yet.</div>`; return; }
+      container.innerHTML = orders.map(o => `<div class="border border-slate-200 rounded-2xl overflow-hidden text-xs"><div class="bg-slate-100 px-4 py-2.5 flex flex-wrap justify-between gap-2 border-b"><div><span class="text-[10px] text-slate-500 block uppercase">Order Date</span><strong>${o.date}</strong></div><div><span class="text-[10px] text-slate-500 block uppercase">Total Paid</span><strong>₹${o.totalAmount.toLocaleString('en-IN')}</strong></div><div><span class="text-[10px] text-slate-500 block uppercase">Order ID</span><strong class="text-indigo-700">${o.orderId}</strong></div></div><div class="p-4 space-y-2.5"><div class="flex items-center justify-between text-[11px] font-bold text-emerald-700"><span>● Confirmed</span><span>● Packed</span><span class="text-slate-400">○ In Transit</span><span class="text-slate-400">○ Delivered</span></div><div class="text-slate-600">Delivering to: <strong>${o.address}</strong> • Via <strong>${o.paymentMethod}</strong></div><div class="space-y-1 pt-1 font-semibold text-slate-900">${o.items.map(i => `<div>${i.title} (${i.variant}) × ${i.qty}</div>`).join('')}</div></div></div>`).join('');
+    }
+    function submitAuth(e) { e.preventDefault(); const res = BackendAPI.auth(document.getElementById('authName').value.trim(), document.getElementById('authEmail').value.trim(), document.getElementById('authPassword').value); if (res.error) return alert(res.error); currentUser = res.user; localStorage.setItem('nx_user', JSON.stringify(currentUser)); document.getElementById('userGreeting').textContent = `Hi, ${currentUser.name}`; closeModal('authModal'); }
+    function publishProduct(e) { e.preventDefault(); BackendAPI.createProduct({ title: document.getElementById('sellTitle').value, brand: document.getElementById('sellBrand').value, category: document.getElementById('sellCategory').value, price: document.getElementById('sellPrice').value, mrp: document.getElementById('sellMrp').value, image: document.getElementById('sellImage').value, highlight: document.getElementById('sellHighlight').value }); closeModal('sellerModal'); e.target.reset(); goHome(); }
+    function openModal(id) { document.getElementById(id).classList.replace('hidden', 'flex'); }
+    function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
+    function toggleServerDrawer() { BackendAPI.renderStats(); document.getElementById('serverDrawer').classList.toggle('hidden'); }
+    function changeLocation() { const loc = prompt('Enter delivery city and pincode:', document.getElementById('locationText').textContent); if (loc && loc.trim()) document.getElementById('locationText').textContent = loc.trim(); }
+
+    if (currentUser) document.getElementById('userGreeting').textContent = `Hi, ${currentUser.name}`;
+    renderHero(); renderFlashDeals(); renderCart(); currentList = BackendAPI.getProducts(); renderCatalog();
+  </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.nav-glass {
+  background: linear-gradient(90deg, #0f172a 0%, #1e1b4b 55%, #0f172a 100%);
+}
+
+.sub-bar {
+  background-color: #172038;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+}
+
+.btn-cyan {
+  background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.btn-cyan:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

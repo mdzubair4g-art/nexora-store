@@ -1,0 +1,283 @@
+import React, { useState, useEffect } from 'react';
+import { api } from '../services/api';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+
+export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
+  const { cart, finalTotal, subtotal, couponDiscount, clearCart } = useCart();
+  const { user } = useAuth();
+
+  const [pincode, setPincode] = useState('560001');
+  const [shippingInfo, setShippingInfo] = useState(null);
+  const [loadingPincode, setLoadingPincode] = useState(false);
+  const [addressLine, setAddressLine] = useState('Flat 402, Prestige Tower, MG Road');
+  const [recipientName, setRecipientName] = useState(user?.name || 'Alex Mercer');
+  const [recipientPhone, setRecipientPhone] = useState('9876543210');
+  const [paymentMethod, setPaymentMethod] = useState('upi');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Auto-lookup default pincode on open
+  useEffect(() => {
+    if (isOpen && pincode.length === 6) {
+      handlePincodeLookup(pincode);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handlePincodeLookup = async (code) => {
+    if (!/^\d{6}$/.test(code)) return;
+    setLoadingPincode(true);
+    try {
+      const data = await api.lookupPincode(code);
+      setShippingInfo(data);
+    } catch (err) {
+      setShippingInfo(null);
+    } finally {
+      setLoadingPincode(false);
+    }
+  };
+
+  const handlePincodeChange = (val) => {
+    setPincode(val);
+    if (val.length === 6) {
+      handlePincodeLookup(val);
+    } else {
+      setShippingInfo(null);
+    }
+  };
+
+  const handleConfirmOrder = async (e) => {
+    e.preventDefault();
+    if (cart.length === 0) return alert('Your shopping bag is empty.');
+
+    setIsProcessing(true);
+    try {
+      // 1. Create Gateway Payment Order (Option 4)
+      const paymentOrder = await api.createPaymentOrder(finalTotal, `rcpt_${Date.now()}`);
+
+      // 2. Simulate Payment Verification
+      const paymentVerification = await api.verifyPayment({
+        razorpay_order_id: paymentOrder.id,
+        razorpay_payment_id: `pay_${Date.now()}`,
+        method: paymentMethod
+      });
+
+      // 3. Persist Order in SQLite Database
+      const fullAddress = `${addressLine}, ${shippingInfo?.city || ''}, ${shippingInfo?.state || ''} - ${pincode}`;
+      const order = await api.placeOrder({
+        userEmail: user?.email || 'guest@nexora.in',
+        items: cart,
+        subtotal,
+        discount: couponDiscount,
+        totalAmount: finalTotal,
+        paymentMethod: paymentMethod === 'upi' ? 'Instant UPI (GPay/PhonePe)' : paymentMethod === 'card' ? 'Credit/Debit Card' : 'Cash on Delivery (COD)',
+        paymentStatus: paymentMethod === 'cod' ? 'PENDING_ON_DELIVERY' : 'PAID_VERIFIED',
+        paymentId: paymentVerification.paymentId,
+        shippingAddress: fullAddress,
+        city: shippingInfo?.city || 'Bengaluru',
+        state: shippingInfo?.state || 'Karnataka',
+        pincode
+      });
+
+      clearCart();
+      onClose();
+      onOrderPlaced(order);
+    } catch (err) {
+      alert(`Payment / Order Error: ${err.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-950/60 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-xl text-slate-400 hover:text-slate-600 transition"
+        >
+          &times;
+        </button>
+
+        <div className="flex items-center gap-2 border-b pb-3 mb-4">
+          <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
+            <i className="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <h3 className="text-base font-black text-slate-900 leading-tight">Secure Express Checkout</h3>
+            <p className="text-[11px] text-slate-500">256-Bit SSL Encrypted Payment</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleConfirmOrder} className="space-y-4 text-xs">
+          {/* Section 1: Delivery Address & Real Pincode API */}
+          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="font-extrabold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                <i className="fa-solid fa-location-dot text-cyan-600"></i>
+                1. Delivery & PIN Code Lookup
+              </label>
+              {loadingPincode && (
+                <span className="text-[10px] text-cyan-600 font-bold animate-pulse">
+                  Verifying pincode...
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-slate-500 font-semibold block mb-0.5">Recipient Name</label>
+                <input
+                  type="text"
+                  required
+                  value={recipientName}
+                  onChange={(e) => setRecipientName(e.target.value)}
+                  className="w-full border rounded-xl px-2.5 py-1.5 bg-white text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-slate-500 font-semibold block mb-0.5">Mobile Number</label>
+                <input
+                  type="tel"
+                  required
+                  value={recipientPhone}
+                  onChange={(e) => setRecipientPhone(e.target.value)}
+                  className="w-full border rounded-xl px-2.5 py-1.5 bg-white text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="col-span-1">
+                <label className="text-[10px] text-slate-500 font-semibold block mb-0.5">PIN Code</label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  required
+                  value={pincode}
+                  onChange={(e) => handlePincodeChange(e.target.value)}
+                  placeholder="560001"
+                  className="w-full border rounded-xl px-2.5 py-1.5 bg-white font-mono font-bold text-xs"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="text-[10px] text-slate-500 font-semibold block mb-0.5">Detected City / State</label>
+                <input
+                  type="text"
+                  readOnly
+                  value={shippingInfo ? `${shippingInfo.city}, ${shippingInfo.state}` : 'Enter valid 6-digit PIN'}
+                  className="w-full border rounded-xl px-2.5 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] text-slate-500 font-semibold block mb-0.5">House / Street / Landmark</label>
+              <input
+                type="text"
+                required
+                value={addressLine}
+                onChange={(e) => setAddressLine(e.target.value)}
+                placeholder="Flat / Building, Street name"
+                className="w-full border rounded-xl px-2.5 py-1.5 bg-white text-xs"
+              />
+            </div>
+
+            {shippingInfo && (
+              <div className="text-[10px] bg-emerald-50 border border-emerald-200 text-emerald-800 p-2 rounded-lg flex items-center justify-between">
+                <div>
+                  <span className="font-bold">Fastest Delivery: </span>
+                  <span>{shippingInfo.deliveryDate} ({shippingInfo.hub})</span>
+                </div>
+                <span className="font-black text-emerald-700">FREE</span>
+              </div>
+            )}
+          </div>
+
+          {/* Section 2: Payment Gateway Selection (Option 4) */}
+          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2.5">
+            <label className="font-extrabold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <i className="fa-solid fa-credit-card text-orange-600"></i>
+              2. Payment Method
+            </label>
+
+            <div className="space-y-2">
+              <label className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition ${paymentMethod === 'upi' ? 'bg-cyan-50/70 border-cyan-400 font-bold' : 'bg-white border-slate-200'}`}>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="payMethod"
+                    value="upi"
+                    checked={paymentMethod === 'upi'}
+                    onChange={() => setPaymentMethod('upi')}
+                    className="accent-cyan-600"
+                  />
+                  <span>Instant UPI (GPay, PhonePe, Paytm, CRED)</span>
+                </div>
+                <span className="text-[10px] bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded font-black">Zero Fee</span>
+              </label>
+
+              <label className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition ${paymentMethod === 'card' ? 'bg-cyan-50/70 border-cyan-400 font-bold' : 'bg-white border-slate-200'}`}>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="payMethod"
+                    value="card"
+                    checked={paymentMethod === 'card'}
+                    onChange={() => setPaymentMethod('card')}
+                    className="accent-cyan-600"
+                  />
+                  <span>Credit / Debit Card (Visa, Mastercard, RuPay)</span>
+                </div>
+                <i className="fa-brands fa-cc-visa text-slate-500 text-base"></i>
+              </label>
+
+              <label className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition ${paymentMethod === 'cod' ? 'bg-cyan-50/70 border-cyan-400 font-bold' : 'bg-white border-slate-200'}`}>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="payMethod"
+                    value="cod"
+                    checked={paymentMethod === 'cod'}
+                    onChange={() => setPaymentMethod('cod')}
+                    className="accent-cyan-600"
+                  />
+                  <span>Cash on Delivery (COD)</span>
+                </div>
+                <span className="text-[10px] text-slate-500">Pay at Doorstep</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Price Breakdown */}
+          <div className="bg-slate-100/70 p-3 rounded-xl border flex justify-between items-center text-sm font-black">
+            <div>
+              <span className="text-slate-600 text-xs block font-normal">Order Total ({cart.length} items)</span>
+              <span>Final Payable:</span>
+            </div>
+            <span className="text-orange-600 text-lg">
+              ₹{finalTotal.toLocaleString('en-IN')}
+            </span>
+          </div>
+
+          {/* Confirm Button */}
+          <button
+            type="submit"
+            disabled={isProcessing}
+            className="w-full btn-primary py-3 rounded-xl font-bold text-sm shadow flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {isProcessing ? (
+              <>
+                <i className="fa-solid fa-spinner animate-spin"></i>
+                Securing Payment & Placing Order...
+              </>
+            ) : (
+              `Authorize & Pay ₹${finalTotal.toLocaleString('en-IN')}`
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
