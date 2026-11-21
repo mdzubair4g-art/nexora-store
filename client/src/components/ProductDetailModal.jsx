@@ -234,8 +234,8 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow,
                     </div>
                     <div className="text-amber-500 font-bold my-1">
                       {'★'.repeat(r.rating)}
-                      <span className="text-emerald-700 ml-1.5 font-normal text-[11px]">
-                        Verified Purchase
+                      <span className="text-slate-500 ml-1.5 font-normal text-[11px]">
+                        Customer review
                       </span>
                     </div>
                     <p className="text-slate-700">{r.comment}</p>
