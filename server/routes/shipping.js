@@ -62,20 +62,17 @@ router.get('/pincode/:pincode', async (req, res) => {
       const data = await response.json();
       if (Array.isArray(data) && data[0]?.Status === 'Success' && data[0]?.PostOffice?.length > 0) {
         const po = data[0].PostOffice[0];
-        const deliveryDate = new Date();
-        deliveryDate.setDate(deliveryDate.getDate() + 3);
-
-        logApiCall('GET', `/api/shipping/pincode/${pin}`, 200, `Live IndiaPost: ${po.District}`);
+        logApiCall('GET', `/api/shipping/pincode/${pin}`, 200, `India Post verified: ${po.District}`);
         return res.json({
           pincode: pin,
           city: po.Name || po.District,
           district: po.District,
           state: po.State,
-          deliveryDays: 3,
-          deliveryDate: deliveryDate.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' }),
+          deliveryDays: null,
+          deliveryDate: null,
           expressAvailable: false,
           standardFee: 0,
-          hub: `${po.Circle || po.State} Logistics Hub`
+          hub: null
         });
       }
     }
