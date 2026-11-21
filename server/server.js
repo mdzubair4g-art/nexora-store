@@ -25,5 +25,5 @@ app.use('/api/auth',authRoutes);app.use('/api/products',productRoutes);app.use('
 const clientDist=path.join(__dirname,'../client/dist');if(fs.existsSync(clientDist)){app.use(express.static(clientDist));app.get('*',(req,res,next)=>{if(req.path.startsWith('/api'))return next();res.sendFile(path.join(clientDist,'index.html'));});}
 app.use((req,res)=>res.status(404).json({error:'Route '+req.method+' '+req.url+' not found'}));
 app.use((err,req,res,next)=>{console.error('Server error:',err);res.status(500).json({error:'Internal server error. Please try again later.'});});
-if(!process.env.VERCEL)app.listen(PORT,()=>console.log('NEXORA API running on '+PORT+' using '+(isPostgres?'PostgreSQL':'local SQLite')));
+if(require.main===module)app.listen(PORT,()=>console.log('NEXORA API running on '+PORT+' using '+(isPostgres?'PostgreSQL':'local SQLite')));
 module.exports=app;
