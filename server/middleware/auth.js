@@ -1,9 +1,29 @@
 const jwt = require('jsonwebtoken');
 
 const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 const JWT_SECRET = process.env.JWT_SECRET || (isProduction ? null : 'nexora_local_development_only_change_me');
 
+function persistentDatabaseAvailable(env = process.env) {
+  // The current app is wired only to node:sqlite. Its /tmp copy is not durable
+  // or shared between Vercel serverless instances. Do not enable commerce just
+  // by setting an env flag; this must change only alongside a real DB adapter.
+  return !(env.VERCEL || env.AWS_LAMBDA_FUNCTION_NAME);
+}
+
+function persistentStoreUnavailable(res) {
+  return res.status(503).json({
+    error: 'Accounts and ordering are temporarily disabled on this deployment. The store needs a connected persistent database before customer data can be saved safely.'
+  });
+}
+
+function requirePersistentDatabase(req, res, next) {
+  if (!persistentDatabaseAvailable()) return persistentStoreUnavailable(res);
+  next();
+}
+
 function requireJwtSecret(req, res, next) {
+  if (!persistentDatabaseAvailable()) return persistentStoreUnavailable(res);
   if (!JWT_SECRET) {
     return res.status(503).json({
       error: 'Account features are temporarily unavailable. The site administrator must configure JWT_SECRET.'
@@ -22,6 +42,8 @@ function authMiddleware(req, res, next) {
   if (!authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Invalid authorization header.' });
   }
+
+  if (!persistentDatabaseAvailable()) return persistentStoreUnavailable(res);
 
   if (!JWT_SECRET) {
     return res.status(503).json({
@@ -44,6 +66,7 @@ function authMiddleware(req, res, next) {
 }
 
 function requireAuth(req, res, next) {
+  if (!persistentDatabaseAvailable()) return persistentStoreUnavailable(res);
   if (!JWT_SECRET) {
     return res.status(503).json({
       error: 'Account features are temporarily unavailable until JWT_SECRET is configured.'
@@ -56,6 +79,7 @@ function requireAuth(req, res, next) {
 }
 
 function requireAdmin(req, res, next) {
+  if (!persistentDatabaseAvailable()) return persistentStoreUnavailable(res);
   if (!JWT_SECRET) {
     return res.status(503).json({
       error: 'Administrator features are unavailable until JWT_SECRET is configured.'
@@ -75,5 +99,7 @@ module.exports = {
   authMiddleware,
   requireAuth,
   requireAdmin,
-  requireJwtSecret
+  requireJwtSecret,
+  requirePersistentDatabase,
+  persistentDatabaseAvailable
 };
