@@ -19,8 +19,8 @@ router.post('/register', requireJwtSecret, (req, res) => {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || cleanEmail.length > 254) {
     return res.status(400).json({ error: 'Enter a valid email address.' });
   }
-  if (password.length < 8 || password.length > 128) {
-    return res.status(400).json({ error: 'Password must be between 8 and 128 characters.' });
+  if (password.length < 10 || Buffer.byteLength(password, 'utf8') > 72) {
+    return res.status(400).json({ error: 'Password must be at least 10 characters and no more than 72 UTF-8 bytes.' });
   }
   if (cleanName.length > 80) {
     return res.status(400).json({ error: 'Name must be 80 characters or fewer.' });
@@ -48,7 +48,7 @@ router.post('/register', requireJwtSecret, (req, res) => {
 // Login
 router.post('/login', requireJwtSecret, (req, res) => {
   const { email, password } = req.body;
-  if (typeof email !== 'string' || typeof password !== 'string' || password.length > 128) {
+  if (typeof email !== 'string' || typeof password !== 'string' || Buffer.byteLength(password, 'utf8') > 72) {
     logApiCall('POST', '/api/auth/login', 400, 'Missing credentials');
     return res.status(400).json({ error: 'Email and password are required.' });
   }
