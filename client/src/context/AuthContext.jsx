@@ -4,7 +4,9 @@ import { api } from '../services/api';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+  const [token, setToken] = useState(() => localStorage.getItem('nx_token') || null);
   const [user, setUser] = useState(() => {
+    if (!localStorage.getItem('nx_token')) return null;
     try {
       const saved = localStorage.getItem('nx_user');
       return saved ? JSON.parse(saved) : null;
@@ -12,7 +14,21 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
-  const [token, setToken] = useState(() => localStorage.getItem('nx_token') || null);
+
+  useEffect(() => {
+    if (!token) return;
+    api.getCurrentUser()
+      .then((data) => {
+        setUser(data.user);
+        localStorage.setItem('nx_user', JSON.stringify(data.user));
+      })
+      .catch(() => {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('nx_user');
+        localStorage.removeItem('nx_token');
+      });
+  }, []);
 
   const login = async (email, password) => {
     const data = await api.login(email, password);
@@ -40,7 +56,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isAuthenticated: Boolean(user) }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, isAuthenticated: Boolean(user && token) }}>
       {children}
     </AuthContext.Provider>
   );
