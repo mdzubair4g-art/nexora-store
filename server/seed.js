@@ -405,11 +405,6 @@ function seed() {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  const insertRev = db.prepare(`
-    INSERT INTO reviews (product_id, user_name, rating, comment)
-    VALUES (?, ?, ?, ?)
-  `);
-
   for (const p of SEED_PRODUCTS) {
     const res = insertProd.run(
       p.title,
@@ -418,8 +413,8 @@ function seed() {
       p.collection,
       p.price,
       p.mrp,
-      p.rating,
-      p.reviewsCount,
+      0,
+      0,
       p.flashDeal,
       JSON.stringify(p.variants),
       p.image,
@@ -428,11 +423,6 @@ function seed() {
     );
 
     const productId = res.lastInsertRowid;
-    if (p.reviews && p.reviews.length > 0) {
-      for (const r of p.reviews) {
-        insertRev.run(productId, r.user, r.rating, r.comment);
-      }
-    }
   }
 
   // Local demo wishlist only; production wishlists belong to registered users.
