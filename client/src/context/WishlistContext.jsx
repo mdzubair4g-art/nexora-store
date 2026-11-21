@@ -33,7 +33,10 @@ export function WishlistProvider({ children }) {
   }, [user?.id]);
 
   const toggleWishlist = async (productId) => {
-    if (!user) return;
+    if (!user) {
+      alert('Please sign in to save items to your wishlist.');
+      return;
+    }
     try {
       const result = await api.toggleWishlist(productId);
       setWishlistIds(result.productIds || []);
