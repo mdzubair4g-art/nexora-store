@@ -32,7 +32,7 @@ export function CartProvider({ children }) {
       const existingIdx = prev.findIndex(item => item.id === product.id && item.variant === chosenVariant);
       if (existingIdx >= 0) {
         const copy = [...prev];
-        copy[existingIdx].qty += qty;
+        copy[existingIdx].qty = Math.min(20, copy[existingIdx].qty + qty);
         return copy;
       } else {
         return [...prev, {
@@ -43,7 +43,7 @@ export function CartProvider({ children }) {
           mrp: product.mrp,
           image: product.image,
           variant: chosenVariant,
-          qty
+          qty: Math.min(20, qty)
         }];
       }
     });
