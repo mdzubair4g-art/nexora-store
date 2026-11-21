@@ -128,9 +128,15 @@ export function AuthModal({ isOpen, onClose }) {
 
               <div>
                 <label className="block text-xs font-bold mb-1">Password</label>
+                {mode === 'register' && (
+                  <p className="text-[10px] text-slate-500 mb-1">Use at least 10 characters.</p>
+                )}
                 <input
                   type="password"
                   required
+                  minLength={mode === 'register' ? 10 : 1}
+                  maxLength={72}
+                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
