@@ -49,7 +49,7 @@ const DOCS_HTML = `<!doctype html>
 <body>
   <main class="shell">
     <header>
-      <a class="brand" href="/"><span>N</span> NEXORA <small style="color:#71829d;font-size:10px;">API</small></a>
+      <a class="brand" href="/" style="display:flex;align-items:center;gap:10px;"><img src="/nexora-mark.svg" alt="" width="34" height="34"><span>NEXORA <small style="color:#71829d;font-size:10px;">API</small></span></a>
       <span class="status" id="api-status">Checking API…</span>
     </header>
 
@@ -106,13 +106,13 @@ const DOCS_HTML = `<!doctype html>
       <p class="muted">These routes require an authenticated account. Administrator routes also require the admin role.</p>
       <div class="endpoint-grid">
         <article class="endpoint"><div class="endpoint-top"><span class="verb post">POST</span><code>/api/auth/register</code></div><p>Create a customer account. Requires a durable database and a private JWT secret.</p></article>
-        <article class="endpoint"><div class="endpoint-top"><span class="verb post">POST</span><code>/api/auth/login</code></div><p>Sign in and receive a signed account token. Disabled on Vercel until persistent storage is connected.</p></article>
+        <article class="endpoint"><div class="endpoint-top"><span class="verb post">POST</span><code>/api/auth/login</code></div><p>Sign in and receive a signed account token. Requires a persistent database and a private JWT secret.</p></article>
         <article class="endpoint"><div class="endpoint-top"><span class="verb">GET</span><code>/api/orders</code></div><p>Returns only the signed-in customer's order history. Admins can inspect all orders.</p></article>
         <article class="endpoint"><div class="endpoint-top"><span class="verb post">POST</span><code>/api/orders</code></div><p>Creates a Cash on Delivery order with server-side price, coupon, and inventory checks.</p></article>
         <article class="endpoint"><div class="endpoint-top"><span class="verb">GET</span><code>/api/wishlist</code></div><p>Returns the signed-in customer's saved products.</p></article>
         <article class="endpoint"><div class="endpoint-top"><span class="verb">GET</span><code>/api/stats</code></div><p>Administrator-only database and request statistics.</p></article>
       </div>
-      <div class="note"><strong>Deployment note:</strong> This project currently uses native SQLite. Vercel serverless storage is temporary and isolated, so sign-in, wishlists, reviews, seller tools, admin stats, and orders stay disabled there until a real persistent database adapter is installed and verified. A JWT secret alone is not sufficient.</div>
+      <div class="note" id="deployment-note"><strong>Deployment note:</strong> Checking the current database and authentication readiness…</div>
     </section>
 
     <section class="panel">
@@ -150,6 +150,11 @@ const DOCS_HTML = `<!doctype html>
         document.getElementById('catalogue-state').textContent = health.capabilities?.catalogue || 'Unknown';
         document.getElementById('account-state').textContent = health.capabilities?.accounts || 'Unknown';
         document.getElementById('orders-state').textContent = health.capabilities?.orders || 'Unknown';
+        const note = document.getElementById('deployment-note');
+        const database = health.database || 'Unknown database';
+        const persistence = health.persistence || 'Persistence not reported';
+        const commerce = health.commerceReady === true;
+        note.innerHTML = '<strong>Deployment readiness:</strong> ' + database + ' · ' + persistence + '. ' + (commerce ? 'Customer accounts and orders are reported ready; run the launch checklist before accepting real orders.' : 'Customer accounts and orders are disabled until persistent storage and a strong JWT_SECRET are configured.');
       } catch (error) {
         document.getElementById('api-status').textContent = 'API unavailable';
         document.getElementById('catalogue-state').textContent = 'Unavailable';

@@ -12,6 +12,24 @@ permissions:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: nexora_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d nexora_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nexora_test
+      JWT_SECRET: nexora-ci-only-secret-never-use-in-production-0123456789
+      NODE_ENV: test
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -32,7 +50,7 @@ jobs:
         run: |
           find server api -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
-      - name: Run authentication tests
+      - name: Run unit and PostgreSQL API integration tests
         run: npm test
 
       - name: Build frontend

@@ -113,7 +113,7 @@ Set both administrator variables together or leave both unset. See [PostgreSQL d
 
 ## Useful commands
 
-Run automated tests:
+The GitHub Actions workflow starts an isolated PostgreSQL 16 service and exercises registration, login, authenticated profiles, server-calculated COD totals, idempotent order retries, customer order ownership, concurrent stock protection, and disabled online-payment endpoints. These integration tests run only against the disposable CI database, not customer data.\n\nRun automated tests:
 
 ```powershell
 npm test
