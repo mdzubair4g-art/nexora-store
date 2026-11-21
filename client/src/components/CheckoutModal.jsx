@@ -62,7 +62,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
       return;
     }
     if (!shippingInfo) {
-      alert('Please enter a valid, serviceable PIN code.');
+      alert('Please verify a valid Indian postal PIN code.');
       return;
     }
 
@@ -173,7 +173,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                 />
               </label>
               <label className="sm:col-span-2 text-[11px] text-slate-600 font-semibold">
-                Detected city / state
+                Detected postal area
                 <input
                   type="text"
                   readOnly
@@ -189,7 +189,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
             {shippingInfo && (
               <p className="text-xs text-emerald-700">
                 <i className="fa-solid fa-circle-check mr-1"></i>
-                PIN code validated. Exact delivery date will be confirmed after dispatch.
+                Postal PIN verified. Courier coverage, COD availability, and delivery timing are not confirmed here.
               </p>
             )}
 
