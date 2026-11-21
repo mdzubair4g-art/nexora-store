@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET, authMiddleware, requireAuth, requireAdmin } = require('../middleware/auth');
+const { JWT_SECRET, authMiddleware, requireAuth, requireAdmin, persistentDatabaseAvailable } = require('../middleware/auth');
 
 function response() {
   return {
@@ -97,4 +97,14 @@ test('requireAdmin accepts administrator accounts', () => {
   requireAdmin(req, res, () => { nextCalled = true; });
 
   assert.equal(nextCalled, true);
+});
+
+
+test('serverless deployments are never treated as durable SQLite storage', () => {
+  assert.equal(persistentDatabaseAvailable({ VERCEL: '1' }), false);
+  assert.equal(persistentDatabaseAvailable({ AWS_LAMBDA_FUNCTION_NAME: 'nexora-api' }), false);
+});
+
+test('a local database file is available for local development', () => {
+  assert.equal(persistentDatabaseAvailable({}), true);
 });
