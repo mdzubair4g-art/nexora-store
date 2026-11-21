@@ -1,11 +1,16 @@
 const jwt = require('jsonwebtoken');
 
 const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
-if (isProduction && !process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET must be configured in the production environment.');
-}
+const JWT_SECRET = process.env.JWT_SECRET || (isProduction ? null : 'nexora_local_development_only_change_me');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'nexora_local_development_only_change_me';
+function requireJwtSecret(req, res, next) {
+  if (!JWT_SECRET) {
+    return res.status(503).json({
+      error: 'Account features are temporarily unavailable. The site administrator must configure JWT_SECRET.'
+    });
+  }
+  next();
+}
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -16,6 +21,12 @@ function authMiddleware(req, res, next) {
 
   if (!authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Invalid authorization header.' });
+  }
+
+  if (!JWT_SECRET) {
+    return res.status(503).json({
+      error: 'Account features are temporarily unavailable until JWT_SECRET is configured.'
+    });
   }
 
   const token = authHeader.slice(7).trim();
@@ -33,6 +44,11 @@ function authMiddleware(req, res, next) {
 }
 
 function requireAuth(req, res, next) {
+  if (!JWT_SECRET) {
+    return res.status(503).json({
+      error: 'Account features are temporarily unavailable until JWT_SECRET is configured.'
+    });
+  }
   if (!req.user || !req.user.id || !req.user.email) {
     return res.status(401).json({ error: 'Please sign in to continue.' });
   }
@@ -40,6 +56,11 @@ function requireAuth(req, res, next) {
 }
 
 function requireAdmin(req, res, next) {
+  if (!JWT_SECRET) {
+    return res.status(503).json({
+      error: 'Administrator features are unavailable until JWT_SECRET is configured.'
+    });
+  }
   if (!req.user || !req.user.id || !req.user.email) {
     return res.status(401).json({ error: 'Please sign in to continue.' });
   }
@@ -53,5 +74,6 @@ module.exports = {
   JWT_SECRET,
   authMiddleware,
   requireAuth,
-  requireAdmin
+  requireAdmin,
+  requireJwtSecret
 };
