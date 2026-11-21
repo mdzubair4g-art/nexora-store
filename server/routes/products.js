@@ -1,6 +1,8 @@
 const express = require('express');
 const { db, logApiCall } = require('../db');
 
+const { requireAuth, requireAdmin } = require('../middleware/auth');
+
 const router = express.Router();
 
 // Helper to format product row
@@ -101,7 +103,7 @@ router.get('/:id', (req, res) => {
 });
 
 // POST new product (Seller Studio)
-router.post('/', (req, res) => {
+router.post('/', requireAdmin, (req, res) => {
   const { title, brand, category, collection, price, mrp, image, highlights, variants } = req.body;
 
   if (!title || !price || !category) {
@@ -143,7 +145,7 @@ router.post('/', (req, res) => {
 });
 
 // POST user review for a product
-router.post('/:id/reviews', (req, res) => {
+router.post('/:id/reviews', requireAuth, (req, res) => {
   const productId = Number(req.params.id);
   const { user, rating, comment } = req.body;
 
@@ -156,7 +158,7 @@ router.post('/:id/reviews', (req, res) => {
     return res.status(404).json({ error: 'Product not found' });
   }
 
-  const userName = (user && user.trim()) || 'Verified Buyer';
+  const userName = String(req.user.name || 'Signed-in shopper').slice(0, 80);
   const numRating = Math.min(5, Math.max(1, Number(rating)));
 
   const insertStmt = db.prepare(`
