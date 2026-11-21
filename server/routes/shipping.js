@@ -83,34 +83,8 @@ router.get('/pincode/:pincode', async (req, res) => {
     // API timeout or network block: gracefully compute based on first digit zonal mapping
   }
 
-  // Zonal heuristics for any valid 6-digit Indian PIN
-  const zones = {
-    '1': { state: 'Delhi / Haryana / Punjab', city: 'North Region', days: 3 },
-    '2': { state: 'Uttar Pradesh / Uttarakhand', city: 'Central North Region', days: 3 },
-    '3': { state: 'Rajasthan / Gujarat', city: 'West Region', days: 3 },
-    '4': { state: 'Maharashtra / Goa', city: 'Western Hub', days: 2 },
-    '5': { state: 'Andhra Pradesh / Telangana / Karnataka', city: 'South Central Hub', days: 2 },
-    '6': { state: 'Tamil Nadu / Kerala', city: 'South Hub', days: 2 },
-    '7': { state: 'West Bengal / Odisha', city: 'East Hub', days: 3 },
-    '8': { state: 'Bihar / Jharkhand', city: 'East Central Hub', days: 3 }
-  };
-
-  const zone = zones[pin[0]] || { state: 'India', city: 'Domestic Hub', days: 3 };
-  const dDate = new Date();
-  dDate.setDate(dDate.getDate() + zone.days);
-
-  logApiCall('GET', `/api/shipping/pincode/${pin}`, 200, `Zonal fallback: ${zone.state}`);
-  res.json({
-    pincode: pin,
-    city: zone.city,
-    district: zone.city,
-    state: zone.state,
-    deliveryDays: zone.days,
-    deliveryDate: dDate.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' }),
-    expressAvailable: true,
-    standardFee: 0,
-    hub: `${zone.city} Fulfillment Hub`
-  });
+  logApiCall('GET', `/api/shipping/pincode/${pin}`, 503, 'Postal lookup unavailable; no fallback estimate returned');
+  return res.status(503).json({ error: 'We could not verify this PIN code right now. Please try again in a moment.' });
 });
 
 module.exports = router;
