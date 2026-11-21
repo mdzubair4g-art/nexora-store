@@ -155,24 +155,26 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
             </div>
             <div className="text-xs text-cyan-700 font-semibold flex items-center gap-1.5">
               <i className="fa-solid fa-truck-fast"></i>
-              FREE Express Delivery Available
+              {product.stock > 0 ? 'Delivery options shown at checkout' : 'Currently out of stock'}
             </div>
             <div className="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-              In Stock & Ready to Ship
+              {product.stock > 0 ? 'In Stock (' + product.stock + ' available)' : 'Out of Stock'}
             </div>
 
             <button
               onClick={() => addToCart(product, selectedVariant)}
-              className="w-full btn-primary py-2.5 rounded-xl text-xs font-bold shadow"
+              disabled={Number(product.stock) <= 0}
+              className="w-full btn-primary py-2.5 rounded-xl text-xs font-bold shadow disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add to Bag
+              {Number(product.stock) > 0 ? 'Add to Bag' : 'Out of Stock'}
             </button>
             <button
               onClick={() => onBuyNow(product, selectedVariant)}
-              className="w-full btn-cyan py-2.5 rounded-xl text-xs font-bold shadow"
+              disabled={Number(product.stock) <= 0}
+              className="w-full btn-cyan py-2.5 rounded-xl text-xs font-bold shadow disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Buy Now
+              {Number(product.stock) > 0 ? 'Buy Now' : 'Unavailable'}
             </button>
           </div>
         </div>
@@ -206,10 +208,10 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !user}
                 className="btn-primary px-5 py-2 rounded-xl font-bold disabled:opacity-50"
               >
-                {isSubmitting ? 'Posting...' : 'Post Review'}
+                {!user ? 'Sign in to review' : (isSubmitting ? 'Posting...' : 'Post Review')}
               </button>
             </form>
           </div>
