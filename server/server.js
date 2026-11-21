@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('node:path');
 const fs = require('node:fs');
-const { authMiddleware, JWT_SECRET } = require('./middleware/auth');
+const { authMiddleware, isJwtSecretConfigured } = require('./middleware/auth');
 const { logApiCall, isServerless } = require('./db');
 
 const authRoutes = require('./routes/auth');
@@ -46,7 +46,7 @@ app.get('/api/health', (req, res) => {
     platform: 'NEXORA.in Full-Stack Engine',
     database: 'SQLite (Node.js native DatabaseSync)',
     persistence: isServerless ? 'Temporary serverless SQLite; customer data cannot be stored safely.' : 'Local SQLite file storage',
-    commerceReady: !isServerless && Boolean(JWT_SECRET),
+    commerceReady: !isServerless && isJwtSecretConfigured,
     capabilities: { catalogue: 'available', accounts: !isServerless && Boolean(JWT_SECRET) ? 'available' : 'disabled', orders: !isServerless && Boolean(JWT_SECRET) ? 'available' : 'disabled' },
     timestamp: new Date().toISOString()
   });
