@@ -62,12 +62,12 @@ export function Navbar({
         {/* Search Bar */}
         <form
           onSubmit={onSearchSubmit}
-          className="flex-1 flex min-w-[220px] h-10 rounded-xl overflow-hidden bg-white shadow-inner focus-within:ring-2 focus-within:ring-cyan-400"
+          className="order-3 md:order-none w-full md:w-auto md:flex-1 flex min-w-0 md:min-w-[220px] h-10 rounded-xl overflow-hidden bg-white shadow-inner focus-within:ring-2 focus-within:ring-cyan-400"
         >
           <select
             value={selectedCategory}
             onChange={(e) => onSelectCategory(e.target.value)}
-            className="bg-slate-100 text-slate-800 text-xs font-semibold px-3 border-r border-slate-200 outline-none cursor-pointer"
+            className="hidden sm:block bg-slate-100 text-slate-800 text-xs font-semibold px-3 border-r border-slate-200 outline-none cursor-pointer"
           >
             <option value="All">All Departments</option>
             <option value="Mobiles & Tablets">Mobiles & Tablets</option>
@@ -83,7 +83,7 @@ export function Navbar({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search 8 collections, brands, gadgets, sneakers..."
+            placeholder="Search products, brands and more..."
             className="flex-1 px-3.5 text-sm text-slate-900 outline-none"
           />
           <button type="submit" className="btn-primary px-4 font-bold text-sm">
@@ -93,14 +93,14 @@ export function Navbar({
 
         {/* Header Right Actions */}
         <div className="flex items-center gap-1.5 md:gap-2">
-          {/* Server status pill */}
+          {/* Admin API inspector shortcut */}
           <button
             onClick={onToggleServerDrawer}
             className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/25 transition"
-            title="Inspect Live SQLite Database & REST API Traffic"
+            title="Open admin API and database inspector"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Server: Online</span>
+            <span>API Inspector</span>
           </button>
 
           {/* Account */}
