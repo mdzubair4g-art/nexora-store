@@ -3,8 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('node:path');
 const fs = require('node:fs');
-const { authMiddleware } = require('./middleware/auth');
-const { logApiCall } = require('./db');
+const { authMiddleware, JWT_SECRET } = require('./middleware/auth');
+const { logApiCall, isServerless } = require('./db');
 
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
@@ -36,7 +36,9 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     platform: 'NEXORA.in Full-Stack Engine',
     database: 'SQLite (Node.js native DatabaseSync)',
-    persistence: process.env.VERCEL ? 'Ephemeral serverless storage; connect a managed database before production use.' : 'Local SQLite file storage',
+    persistence: isServerless ? 'Temporary serverless SQLite; customer data cannot be stored safely.' : 'Local SQLite file storage',
+    commerceReady: !isServerless && Boolean(JWT_SECRET),
+    capabilities: { catalogue: 'available', accounts: !isServerless && Boolean(JWT_SECRET) ? 'available' : 'disabled', orders: !isServerless && Boolean(JWT_SECRET) ? 'available' : 'disabled' },
     timestamp: new Date().toISOString()
   });
 });
