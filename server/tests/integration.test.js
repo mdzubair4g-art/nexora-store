@@ -5,9 +5,11 @@ const { randomUUID } = require('node:crypto');
 const app = require('../server');
 const { databaseReady, query, transaction, close, isPostgres } = require('../db');
 
-test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and disabled online payments', async () => {
+test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and disabled online payments', { timeout: 120000 }, async () => {
   assert.equal(isPostgres, true, 'CI integration tests must run against PostgreSQL');
+  console.log('[integration] waiting for PostgreSQL schema and seed');
   await databaseReady;
+  console.log('[integration] database ready');
 
   const savedStocks = new Map();
   const emails = [
@@ -29,13 +31,15 @@ test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and di
     const response = await fetch(baseUrl + pathname, {
       method: options.method || 'GET',
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body)
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      signal: AbortSignal.timeout(15000)
     });
     const data = await response.json();
     return { status: response.status, data };
   };
 
   try {
+    console.log('[integration] checking health and catalogue');
     const health = await call('/api/health');
     assert.equal(health.status, 200);
     assert.equal(health.data.database, 'PostgreSQL');
@@ -51,6 +55,7 @@ test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and di
     assert.equal(products.rows.length, 2, 'integration tests expect seeded products 1 and 2');
     for (const product of products.rows) savedStocks.set(Number(product.id), Number(product.stock));
 
+    console.log('[integration] registering and authenticating two shoppers');
     const registrationA = await call('/api/auth/register', {
       method: 'POST',
       body: { name: 'Integration Shopper A', email: emails[0], password: 'Strong-CI-Password-123!' }
@@ -115,6 +120,7 @@ test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and di
       pincode: '560001'
     };
 
+    console.log('[integration] placing and replaying a COD order');
     const order = await call('/api/orders', { method: 'POST', token: tokenA, body: orderPayload });
     assert.equal(order.status, 201);
     assert.match(order.data.orderId, /^NX-/);
@@ -162,6 +168,7 @@ test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and di
       }
     });
 
+    console.log('[integration] running concurrent stock reservation test');
     const competing = await Promise.all([
       makeConcurrentOrder(tokenA, 'a'),
       makeConcurrentOrder(tokenB, 'b')
@@ -170,6 +177,7 @@ test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and di
     const remaining = await query('SELECT stock FROM products WHERE id=?', [Number(secondProduct.id)]);
     assert.equal(Number(remaining.rows[0].stock), 0, 'stock must never become negative');
 
+    console.log('[integration] verifying online payments remain disabled');
     const paymentMethods = await call('/api/payments/methods');
     assert.equal(paymentMethods.status, 200);
     assert.equal(paymentMethods.data.onlinePaymentsAvailable, false);
@@ -186,6 +194,7 @@ test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and di
     });
     assert.equal(verifyOnlinePayment.status, 503);
   } finally {
+    console.log('[integration] cleaning temporary CI records and closing connections');
     try {
       await transaction(async tx => {
         await tx.query(
@@ -203,8 +212,10 @@ test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and di
         }
       });
     } finally {
+      const serverClosed = new Promise(resolve => server.close(resolve));
       server.closeAllConnections?.();
-      await new Promise(resolve => server.close(resolve));
+      server.closeIdleConnections?.();
+      await serverClosed;
       await new Promise(resolve => setTimeout(resolve, 150));
       await close();
     }
