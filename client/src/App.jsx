@@ -19,11 +19,12 @@ import { useCart } from './context/CartContext';
 import { useAuth } from './context/AuthContext';
 
 export function App() {
-  const { addToCart } = useCart();
+  const { addToCart, setIsCartOpen } = useCart();
   const { user } = useAuth();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // Filters & Search
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -49,6 +50,7 @@ export function App() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      setLoadError('');
       const data = await api.getProducts({
         category: selectedCategory,
         collection: selectedCollection,
@@ -60,6 +62,7 @@ export function App() {
       setProducts(data.products || []);
     } catch (err) {
       console.error('Failed to load products from API:', err);
+      setLoadError(err.message || 'The catalogue could not be loaded.');
     } finally {
       setLoading(false);
     }
@@ -121,6 +124,7 @@ export function App() {
       return;
     }
     addToCart(product, variant, 1);
+    setIsCartOpen(false);
     setIsCheckoutModalOpen(true);
   };
 
@@ -233,6 +237,8 @@ export function App() {
             catalogTitle={catalogTitle}
             products={products}
             loading={loading}
+            error={loadError}
+            onRetry={fetchProducts}
             priceFilter={priceFilter}
             onChangePriceFilter={setPriceFilter}
             sortSelect={sortSelect}
