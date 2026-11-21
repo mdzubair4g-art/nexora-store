@@ -14,7 +14,7 @@
   <a href="https://github.com/mdzubair4g-art/nexora-store/pull/1">Development pull request</a>
 </p>
 
-> **Project status:** Development changes are on `improve/nexora-storefront` in [PR #1](https://github.com/mdzubair4g-art/nexora-store/pull/1), which remains a draft. Production has not been promoted. An earlier Vercel Preview confirmed PostgreSQL health and the seeded catalogue; the latest branch changes still require a fresh Preview build and end-to-end checkout checks before launch.
+> **Project status:** The PostgreSQL-backed development Preview is deployed, but this pull request remains a draft and production has not been promoted. The current seeded catalogue contains demonstration listings. Real ordering is **disabled by default** until the store owner verifies product details, images, prices, stock, promotions and fulfilment, then explicitly sets `CATALOGUE_LIVE=true`.
 
 ## Overview
 
@@ -39,7 +39,7 @@ NEXORA is built with React, Vite, Tailwind CSS, Node.js, and Express. It uses Po
 - Customer registration and sign-in
 - Account-scoped wishlists and order history
 - Administrator-only product publishing and API statistics
-- Cash on Delivery (COD) checkout
+- A server-validated Cash on Delivery flow, guarded until the catalogue is verified
 - India Post PIN-code lookup for postal-area verification only
 - Shared NEXORA logo mark and browser SVG favicon
 
@@ -108,12 +108,15 @@ Configure these values locally in `.env` and as encrypted environment variables 
 | `DATABASE_URL` | Preview/Production | PostgreSQL connection string |
 | `ADMIN_EMAIL` | Optional | Email for the provisioned administrator account |
 | `ADMIN_PASSWORD` | Optional | Strong administrator password; 16–72 UTF-8 bytes |
+| `CATALOGUE_LIVE` | Optional; defaults to `false` | Set to `true` only after the store owner verifies all live products, images, prices, stock, promotions and fulfilment |
 
 Set both administrator variables together or leave both unset. See [PostgreSQL deployment setup](docs/POSTGRESQL_SETUP.md) for Vercel and Neon configuration.
 
 ## Useful commands
 
-The GitHub Actions workflow starts an isolated PostgreSQL 16 service and exercises registration, login, authenticated profiles, server-calculated COD totals, idempotent order retries, customer order ownership, concurrent stock protection, and disabled online-payment endpoints. These integration tests run only against the disposable CI database, not customer data.\n\nRun automated tests:
+The GitHub Actions workflow starts an isolated PostgreSQL 16 service and exercises registration, login, authenticated profiles, server-calculated COD totals, idempotent order retries, customer order ownership, concurrent stock protection, and disabled online-payment endpoints. These integration tests run only against the disposable CI database, not customer data.
+
+Run automated tests:
 
 ```powershell
 npm test
@@ -138,7 +141,7 @@ npm run seed
 - `GET /api/health` — reports service and database readiness
 - `GET /api/products` — returns the product catalogue
 
-Before testing accounts and orders on a deployment, confirm that `/api/health` reports PostgreSQL and `commerceReady: true`.
+Before testing accounts and orders on a deployment, confirm that `/api/health` reports PostgreSQL, `commerceReady: true`, and `catalogueLive: true`. Accounts and order readiness are reported separately.
 
 ## Security and checkout
 
@@ -152,6 +155,10 @@ Before testing accounts and orders on a deployment, confirm that `/api/health` r
 - PIN-code lookup is only for postal-area verification. Courier coverage, COD availability, shipping charges, and delivery estimates require a shipping-partner integration.
 - Do not expose database URLs, JWT secrets, administrator credentials, or local `.env` files.
 
+## Demo catalogue and order safety
+
+The seeded product names, photos, prices, MRPs, stock quantities and coupon codes are demonstration content, not verified inventory or a supplier price feed. Deployments keep `CATALOGUE_LIVE=false` by default, which blocks order creation, coupon application and customer reviews while allowing catalogue browsing. Only the store owner should enable it after verifying every live listing and fulfilment rule.
+
 ## Local demo accounts
 
 The local seed script creates demo accounts when running outside Vercel:
@@ -163,12 +170,14 @@ These credentials are for local demos only. Never use them on a public deploymen
 
 ## Before production launch
 
-1. Deploy the latest development branch to Vercel Preview and confirm PostgreSQL readiness at `/api/health`.
-2. Test registration, login, COD checkout, stock updates under concurrent requests, duplicate-order protection, and customer order ownership end-to-end.
-3. Verify the latest frontend build and check desktop and mobile layouts.
-4. Integrate and test a real shipping partner before displaying delivery promises or shipping charges.
-5. Keep online payments disabled until a payment provider, server-side signature verification, and verified webhooks are implemented.
-6. Configure monitoring and database backups, publish privacy/terms pages, and review product images, prices, inventory, and applicable marketplace requirements.
+1. Verify every product name, brand, photo, price, MRP, variant, stock quantity and promotion against real store/supplier information; replace all demonstration listings.
+2. Configure the production JWT secret and administrator credentials securely; never use the public local demo credentials.
+3. Deploy the latest branch to Preview and confirm PostgreSQL and account readiness at `/api/health`.
+4. Test registration, login, COD checkout, stock concurrency, idempotency, and order ownership end-to-end in the isolated Preview.
+5. Verify desktop and mobile layouts and the production build.
+6. Integrate and test a real shipping partner before displaying delivery promises, COD availability or shipping charges.
+7. Keep online payments disabled until a provider, server-side signature verification, and verified webhooks are implemented.
+8. Configure monitoring and backups, and publish owner-reviewed privacy, terms, refunds/returns and real customer support information.
 
 ## Project links
 

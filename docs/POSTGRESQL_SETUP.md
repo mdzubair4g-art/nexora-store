@@ -25,7 +25,7 @@ Do not use \`VITE_\` prefixes for database credentials. Never commit secrets.
 5. Open \`/api/health\`. It should report \`PostgreSQL\`, \`commerceReady: true\`, and accounts/orders as available.
 6. Test registration, login, a COD checkout, and order history using a test account before promoting any build.
 
-The backend creates its tables and indexes at startup and seeds the catalogue only when the products table is empty. Existing local SQLite data is not automatically copied to Neon; migrate real records separately before switching an established store.
+The backend creates its tables and indexes at startup and seeds a 24-item demo catalogue only when the products table is empty. Treat seeded content as sample data, not real inventory. The server blocks order creation, coupon application and reviews unless `CATALOGUE_LIVE=true`. Existing local SQLite data is not automatically copied to Neon; migrate real records separately before switching an established store.
 
 ## Data and payment safety
 

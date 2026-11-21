@@ -43,6 +43,7 @@ async function main() {
     assert.equal(health.status, 200);
     assert.equal(health.data.database, 'PostgreSQL');
     assert.equal(health.data.commerceReady, true);
+    assert.equal(health.data.catalogueLive, true);
 
     const catalogue = await call('/api/products');
     assert.equal(catalogue.status, 200);

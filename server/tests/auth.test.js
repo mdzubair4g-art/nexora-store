@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET, authMiddleware, requireAuth, requireAdmin, persistentDatabaseAvailable } = require('../middleware/auth');
+const { JWT_SECRET, authMiddleware, requireAuth, requireAdmin, persistentDatabaseAvailable, catalogueIsLiveFor } = require('../middleware/auth');
 
 function response() {
   return {
@@ -107,4 +107,10 @@ test('serverless deployments are never treated as durable SQLite storage', () =>
 
 test('a local database file is available for local development', () => {
   assert.equal(persistentDatabaseAvailable({}), true);
+});
+
+test('catalogue stays paused unless the owner explicitly enables it', () => {
+  assert.equal(catalogueIsLiveFor({}), false);
+  assert.equal(catalogueIsLiveFor({ CATALOGUE_LIVE: 'false' }), false);
+  assert.equal(catalogueIsLiveFor({ CATALOGUE_LIVE: 'true' }), true);
 });

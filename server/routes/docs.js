@@ -91,7 +91,7 @@ const DOCS_HTML = `<!doctype html>
         </article>
         <article class="endpoint">
           <div class="endpoint-top"><span class="verb post">POST</span><code>/api/coupons/apply</code></div>
-          <p>Checks a coupon code against the seeded/local coupon catalogue. Order totals are recalculated again by the server.</p>
+          <p>Coupon checks remain paused until the store owner verifies and activates the real catalogue.</p>
         </article>
         <article class="endpoint">
           <div class="endpoint-top"><span class="verb">GET</span><code>/api/payments/methods</code></div>
@@ -108,7 +108,7 @@ const DOCS_HTML = `<!doctype html>
         <article class="endpoint"><div class="endpoint-top"><span class="verb post">POST</span><code>/api/auth/register</code></div><p>Create a customer account. Requires a durable database and a private JWT secret.</p></article>
         <article class="endpoint"><div class="endpoint-top"><span class="verb post">POST</span><code>/api/auth/login</code></div><p>Sign in and receive a signed account token. Requires a persistent database and a private JWT secret.</p></article>
         <article class="endpoint"><div class="endpoint-top"><span class="verb">GET</span><code>/api/orders</code></div><p>Returns only the signed-in customer's order history. Admins can inspect all orders.</p></article>
-        <article class="endpoint"><div class="endpoint-top"><span class="verb post">POST</span><code>/api/orders</code></div><p>Creates a Cash on Delivery order with server-side price, coupon, and inventory checks.</p></article>
+        <article class="endpoint"><div class="endpoint-top"><span class="verb post">POST</span><code>/api/orders</code></div><p>Creates a COD order only after the store owner activates a verified catalogue and confirms fulfilment.</p></article>
         <article class="endpoint"><div class="endpoint-top"><span class="verb">GET</span><code>/api/wishlist</code></div><p>Returns the signed-in customer's saved products.</p></article>
         <article class="endpoint"><div class="endpoint-top"><span class="verb">GET</span><code>/api/stats</code></div><p>Administrator-only database and request statistics.</p></article>
       </div>
@@ -154,7 +154,11 @@ const DOCS_HTML = `<!doctype html>
         const database = health.database || 'Unknown database';
         const persistence = health.persistence || 'Persistence not reported';
         const commerce = health.commerceReady === true;
-        note.innerHTML = '<strong>Deployment readiness:</strong> ' + database + ' · ' + persistence + '. ' + (commerce ? 'Customer accounts and orders are reported ready; run the launch checklist before accepting real orders.' : 'Customer accounts and orders are disabled until persistent storage and a strong JWT_SECRET are configured.');
+        const accounts = health.capabilities?.accounts === 'available';
+        const catalogueLive = health.catalogueLive === true;
+        const accountNote = accounts ? 'Customer accounts are available. ' : 'Customer accounts are disabled until persistent storage and a strong JWT_SECRET are configured. ';
+        const orderNote = commerce ? 'Order API is enabled.' : catalogueLive ? 'Order placement is disabled until the account/database configuration is complete.' : 'Order creation, coupons and reviews are paused until the store owner verifies the real catalogue and sets CATALOGUE_LIVE=true.';
+        note.textContent = 'Deployment readiness: ' + database + ' · ' + persistence + '. ' + accountNote + orderNote;
       } catch (error) {
         document.getElementById('api-status').textContent = 'API unavailable';
         document.getElementById('catalogue-state').textContent = 'Unavailable';
