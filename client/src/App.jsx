@@ -206,6 +206,7 @@ export function App() {
           product={activeProductDetail}
           onClose={() => setActiveProductDetail(null)}
           onBuyNow={handleBuyNow}
+          onOpenAuth={() => setIsAuthModalOpen(true)}
         />
       ) : (
         <div className="flex-1">
