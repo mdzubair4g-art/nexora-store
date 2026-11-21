@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const path = require('node:path');
 const fs = require('node:fs');
 const { authMiddleware, JWT_SECRET } = require('./middleware/auth');
@@ -19,14 +18,24 @@ const docsRoutes = require('./routes/docs');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable CORS for frontend development
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// The storefront and API share one origin (Vercel rewrites and the Vite dev proxy).
+// Do not enable wildcard cross-origin access for account or checkout endpoints.
+app.disable('x-powered-by');
 
-app.use(express.json());
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
+app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
+app.use(express.json({ limit: '64kb', strict: true }));
 app.use(authMiddleware);
 
 // Health check endpoint
@@ -73,7 +82,7 @@ app.use((req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({ error: 'Internal server error', message: err.message });
+  res.status(500).json({ error: 'Internal server error. Please try again later.' });
 });
 
 if (!process.env.VERCEL) {
