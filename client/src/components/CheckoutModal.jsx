@@ -70,17 +70,13 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
     try {
       const city = shippingInfo.city || shippingInfo.district || '';
       const state = shippingInfo.state || '';
-      const fullAddress = recipientName.trim() + ' (' + recipientPhone.trim() + '), ' +
-        addressLine.trim() + ', ' + city + ', ' + state + ' - ' + pincode;
 
       const order = await api.placeOrder({
         items: cart,
         couponCode: coupon || '',
-        subtotal,
-        discount: couponDiscount,
-        totalAmount: finalTotal,
-        paymentMethod: 'Cash on Delivery (COD)',
-        shippingAddress: fullAddress,
+        recipientName: recipientName.trim(),
+        recipientPhone: recipientPhone.trim(),
+        addressLine: addressLine.trim(),
         city,
         state,
         pincode
