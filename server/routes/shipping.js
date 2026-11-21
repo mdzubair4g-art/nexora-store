@@ -80,7 +80,7 @@ router.get('/pincode/:pincode', async (req, res) => {
       }
     }
   } catch (err) {
-    // API timeout or network block: gracefully compute based on first digit zonal mapping
+    // API timeout or network block: serviceability could not be confirmed
   }
 
   logApiCall('GET', `/api/shipping/pincode/${pin}`, 503, 'Postal lookup unavailable; no fallback estimate returned');
