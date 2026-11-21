@@ -19,12 +19,25 @@ export function ProductCard({ product, onOpenDetail }) {
         }}
         className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/90 shadow hover:bg-white flex items-center justify-center transition"
         title={wished ? 'Remove from wishlist' : 'Save to wishlist'}
+        aria-label={wished ? 'Remove from wishlist' : 'Save to wishlist'}
       >
         <i className={`${wished ? 'fa-solid text-rose-500' : 'fa-regular text-slate-400'} fa-heart text-sm`}></i>
       </button>
 
       {/* Product Image and Meta */}
-      <div onClick={() => onOpenDetail(product)} className="cursor-pointer">
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label={'View details for ' + product.title}
+        onClick={() => onOpenDetail(product)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onOpenDetail(product);
+          }
+        }}
+        className="cursor-pointer"
+      >
         <div className="h-44 bg-slate-50 rounded-xl flex items-center justify-center p-3 mb-3 overflow-hidden relative">
           {product.flashDeal && (
             <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full z-10">
