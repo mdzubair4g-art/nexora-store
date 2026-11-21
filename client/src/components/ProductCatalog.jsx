@@ -5,6 +5,8 @@ export function ProductCatalog({
   catalogTitle,
   products = [],
   loading = false,
+  error = '',
+  onRetry,
   priceFilter,
   onChangePriceFilter,
   sortSelect,
@@ -57,6 +59,13 @@ export function ProductCatalog({
                 <div className="h-4 bg-slate-100 rounded w-1/2"></div>
               </div>
             ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-14 px-4">
+            <i className="fa-solid fa-cloud-arrow-down text-4xl text-slate-300 mb-3"></i>
+            <h3 className="font-bold text-slate-800">We couldn’t load the catalogue</h3>
+            <p className="text-sm text-slate-500 mt-1">{error}</p>
+            <button type="button" onClick={onRetry} className="btn-cyan mt-4 rounded-xl px-5 py-2 text-xs font-bold">Try again</button>
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-16 text-slate-500 text-sm">
