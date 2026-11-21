@@ -2,7 +2,7 @@
 
 NEXORA is a responsive marketplace demo built with React, Vite, Tailwind CSS, Express, and SQLite. It includes product browsing, search and filters, a shopping bag, coupons, account registration, wishlists, order history, and an administrator-only seller area.
 
-> **Deployment note:** The current Vercel adapter copies SQLite into /tmp. That storage is temporary and isolated between serverless instances. This project is suitable for development and demos, but it is not ready to process real customer orders until SQLite is replaced with a managed persistent database (for example, Neon Postgres or another hosted database).
+> **Deployment note:** The current Vercel function creates SQLite in /tmp. That storage is temporary and isolated between serverless instances. This project is suitable for development and demos, but it is not ready to process real customer orders until SQLite is replaced with a managed persistent database (for example, Neon Postgres or another hosted database).
 
 ## Stack
 
@@ -28,7 +28,7 @@ NEXORA is a responsive marketplace demo built with React, Vite, Tailwind CSS, Ex
 - Order item prices and coupon discounts are recalculated on the server.
 - Product publishing and internal statistics require an administrator account.
 - Online payment endpoints are intentionally disabled. The previous mock verification flow did not process a real payment, so checkout now supports Cash on Delivery only.
-- Production requires a private JWT_SECRET and a durable database adapter. On Vercel, account, wishlist, review, seller, and order operations stay disabled until persistent storage is actually connected; a secret alone does not enable them. Vercel deployments remove the public local demo accounts.
+- Production requires a private JWT_SECRET and a durable database adapter. On Vercel, account, wishlist, review, seller, and order operations stay disabled until persistent storage is actually connected; a secret alone does not enable them. Vercel deployments remove the public local demo accounts. Production JWT_SECRET must contain at least 32 bytes. New customer passwords must be at least 10 characters and no more than 72 UTF-8 bytes (the bcrypt input limit).
 - Never commit .env files or production credentials.
 
 ## Local setup
@@ -102,8 +102,8 @@ The seed command resets the local catalogue, reviews, coupons, and local demo us
 
 ## Before accepting real orders
 
-1. Replace the temporary serverless SQLite copy with a managed persistent database.
-2. Configure a real payment provider only after implementing server-side signature verification and webhooks. Until then, keep Cash on Delivery only.
+1. Connect a managed persistent database (Neon Postgres or another hosted database) and migrate every route away from serverless /tmp SQLite. Then verify persistence across independent serverless instances.
+2. Connect a real commerce provider for catalog, cart, checkout, and payments. Shopify is the recommended Vercel Marketplace commerce integration; confirm its account and plan before provisioning.
 3. Configure delivery partners and verify serviceability and estimated delivery with a real shipping service.
 4. Add automated tests, monitoring, backups, and privacy/terms pages.
 5. Review product images, prices, inventory, and marketplace legal requirements.
