@@ -39,3 +39,51 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+
+/* Polished interactions and accessibility defaults */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(6, 182, 212, 0.22);
+  color: #0f172a;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(6, 182, 212, 0.8);
+  outline-offset: 3px;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .nav-glass header,
+  header.nav-glass {
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
+  }
+}
