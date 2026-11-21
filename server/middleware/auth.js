@@ -27,7 +27,7 @@ function requireJwtSecret(req, res, next) {
   if (!persistentDatabaseAvailable()) return persistentStoreUnavailable(res);
   if (!isJwtSecretConfigured) {
     return res.status(503).json({
-      error: 'Account features are temporarily unavailable. The site administrator must configure JWT_SECRET.'
+      error: 'Account features are temporarily unavailable. The site administrator must set a private JWT_SECRET of at least 32 bytes.'
     });
   }
   next();
@@ -46,7 +46,7 @@ function authMiddleware(req, res, next) {
 
   if (!persistentDatabaseAvailable()) return persistentStoreUnavailable(res);
 
-  if (!JWT_SECRET) {
+  if (!isJwtSecretConfigured) {
     return res.status(503).json({
       error: 'Account features are temporarily unavailable until a private JWT_SECRET of at least 32 bytes is configured.'
     });
@@ -68,9 +68,9 @@ function authMiddleware(req, res, next) {
 
 function requireAuth(req, res, next) {
   if (!persistentDatabaseAvailable()) return persistentStoreUnavailable(res);
-  if (!JWT_SECRET) {
+  if (!isJwtSecretConfigured) {
     return res.status(503).json({
-      error: 'Account features are temporarily unavailable until JWT_SECRET is configured.'
+      error: 'Account features are temporarily unavailable until a private JWT_SECRET of at least 32 bytes is configured.'
     });
   }
   if (!req.user || !req.user.id || !req.user.email) {
@@ -81,7 +81,7 @@ function requireAuth(req, res, next) {
 
 function requireAdmin(req, res, next) {
   if (!persistentDatabaseAvailable()) return persistentStoreUnavailable(res);
-  if (!JWT_SECRET) {
+  if (!isJwtSecretConfigured) {
     return res.status(503).json({
       error: 'Administrator features are unavailable until JWT_SECRET is configured.'
     });
