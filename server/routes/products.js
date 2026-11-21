@@ -164,10 +164,12 @@ router.post('/', requireAdmin, (req, res) => {
 // POST user review for a product
 router.post('/:id/reviews', requireAuth, (req, res) => {
   const productId = Number(req.params.id);
-  const { user, rating, comment } = req.body;
+  const { rating, comment } = req.body || {};
+  const numericRating = Number(rating);
 
-  if (!rating || !comment) {
-    return res.status(400).json({ error: 'Rating and comment are required' });
+  if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5 ||
+      typeof comment !== 'string' || !comment.trim() || comment.trim().length > 1000) {
+    return res.status(400).json({ error: 'Choose a rating from 1 to 5 and write a review under 1,000 characters.' });
   }
 
   const prod = db.prepare('SELECT id, rating, reviews_count FROM products WHERE id = ?').get(productId);
@@ -176,7 +178,7 @@ router.post('/:id/reviews', requireAuth, (req, res) => {
   }
 
   const userName = String(req.user.name || 'Signed-in shopper').slice(0, 80);
-  const numRating = Math.min(5, Math.max(1, Number(rating)));
+  const numRating = numericRating;
 
   const insertStmt = db.prepare(`
     INSERT INTO reviews (product_id, user_name, rating, comment)
