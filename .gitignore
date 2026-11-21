@@ -7,5 +7,6 @@ client/dist/
 .env.*
 !.env.example
 *.log
+*.db
 *.db-shm
 *.db-wal
