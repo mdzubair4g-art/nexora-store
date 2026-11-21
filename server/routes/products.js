@@ -131,9 +131,10 @@ router.post('/', requireAdmin, (req, res) => {
   const highlightList = Array.isArray(highlights)
     ? highlights.filter(value => typeof value === 'string' && value.trim()).slice(0, 8).map(value => value.trim().slice(0, 180))
     : (typeof highlights === 'string' && highlights.trim() ? [highlights.trim().slice(0, 180)] : ['Product details coming soon']);
-  const variantList = Array.isArray(variants) && variants.length > 0
+  const cleanedVariants = Array.isArray(variants)
     ? variants.filter(value => typeof value === 'string' && value.trim()).slice(0, 20).map(value => value.trim().slice(0, 80))
-    : ['Standard Edition'];
+    : [];
+  const variantList = cleanedVariants.length ? cleanedVariants : ['Standard Edition'];
 
   const stmt = db.prepare(`
     INSERT INTO products (
