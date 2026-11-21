@@ -162,41 +162,66 @@ router.post('/', requireAdmin, (req, res) => {
   res.status(201).json(formatProduct(created));
 });
 
-// POST user review for a product
+// POST one customer review per signed-in account and product.
 router.post('/:id/reviews', requireAuth, (req, res) => {
   const productId = Number(req.params.id);
+  const userId = Number(req.user.id);
   const { rating, comment } = req.body || {};
   const numericRating = Number(rating);
+
+  if (!Number.isSafeInteger(productId) || productId < 1 ||
+      !Number.isInteger(userId) || userId < 1) {
+    return res.status(400).json({ error: 'A valid product and signed-in account are required.' });
+  }
 
   if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5 ||
       typeof comment !== 'string' || !comment.trim() || comment.trim().length > 1000) {
     return res.status(400).json({ error: 'Choose a rating from 1 to 5 and write a review under 1,000 characters.' });
   }
 
-  const prod = db.prepare('SELECT id, rating, reviews_count FROM products WHERE id = ?').get(productId);
+  const prod = db.prepare('SELECT id FROM products WHERE id = ?').get(productId);
   if (!prod) {
-    return res.status(404).json({ error: 'Product not found' });
+    return res.status(404).json({ error: 'Product not found.' });
   }
 
-  const userName = String(req.user.name || 'Signed-in shopper').slice(0, 80);
-  const numRating = numericRating;
+  const existing = db.prepare('SELECT id FROM reviews WHERE product_id = ? AND user_id = ?').get(productId, userId);
+  if (existing) {
+    return res.status(409).json({ error: 'You have already reviewed this product.' });
+  }
 
-  const insertStmt = db.prepare(`
-    INSERT INTO reviews (product_id, user_name, rating, comment)
-    VALUES (?, ?, ?, ?)
-  `);
-  insertStmt.run(productId, userName, numRating, comment.trim());
+  const userName = String(req.user.name || 'Signed-in shopper').trim().slice(0, 80) || 'Signed-in shopper';
 
-  // Update product aggregated rating and review count
-  const newCount = prod.reviews_count + 1;
-  const newRating = Number(((prod.rating * prod.reviews_count + numRating) / newCount).toFixed(1));
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    db.prepare(
+      'INSERT INTO reviews (product_id, user_id, user_name, rating, comment) VALUES (?, ?, ?, ?, ?)'
+    ).run(productId, userId, userName, numericRating, comment.trim());
 
-  db.prepare(`
-    UPDATE products SET reviews_count = ?, rating = ? WHERE id = ?
-  `).run(newCount, newRating, productId);
+    const aggregate = db.prepare(
+      'SELECT COUNT(*) AS reviews_count, AVG(rating) AS average_rating FROM reviews WHERE product_id = ?'
+    ).get(productId);
 
-  logApiCall('POST', `/api/products/${productId}/reviews`, 201, `Review by ${userName}`);
-  res.status(201).json({ message: 'Review added successfully', rating: newRating, reviewsCount: newCount });
+    const reviewsCount = Number(aggregate.reviews_count || 0);
+    const averageRating = reviewsCount
+      ? Number(Number(aggregate.average_rating).toFixed(1))
+      : 0;
+
+    db.prepare('UPDATE products SET reviews_count = ?, rating = ? WHERE id = ?')
+      .run(reviewsCount, averageRating, productId);
+
+    db.exec('COMMIT');
+    logApiCall('POST', `/api/products/${productId}/reviews`, 201, `Review by account ${userId}`);
+    return res.status(201).json({
+      message: 'Review added successfully.',
+      rating: averageRating,
+      reviewsCount
+    });
+  } catch (error) {
+    db.exec('ROLLBACK');
+    if (String(error.message || '').includes('UNIQUE constraint failed')) {
+      return res.status(409).json({ error: 'You have already reviewed this product.' });
+    }
+    throw error;
+  }
 });
-
 module.exports = router;
