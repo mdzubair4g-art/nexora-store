@@ -1,9 +1,10 @@
 const express = require('express');
+const crypto = require('node:crypto');
 const { db, logApiCall } = require('../db');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Helper to format order row
 function formatOrder(o) {
   return {
     id: o.id,
@@ -26,93 +27,140 @@ function formatOrder(o) {
   };
 }
 
-// POST create new order
-router.post('/', (req, res) => {
-  const {
-    userEmail,
-    items,
-    subtotal,
-    discount,
-    totalAmount,
-    paymentMethod,
-    paymentStatus,
-    paymentId,
-    shippingAddress,
-    city,
-    state,
-    pincode
-  } = req.body;
+// Create an authenticated Cash on Delivery order.
+// Product prices and coupon discounts are recalculated on the server.
+router.post('/', requireAuth, (req, res) => {
+  const { items, couponCode, shippingAddress, city, state, pincode } = req.body || {};
 
-  if (!items || !Array.isArray(items) || items.length === 0) {
-    logApiCall('POST', '/api/orders', 400, 'Empty items array');
-    return res.status(400).json({ error: 'Order must contain at least one item.' });
+  if (!Array.isArray(items) || items.length === 0 || items.length > 30) {
+    return res.status(400).json({ error: 'Add between 1 and 30 valid items to your order.' });
   }
 
-  const orderId = 'NX-' + Math.floor(100000 + Math.random() * 900000);
-  const email = (userEmail && userEmail.trim().toLowerCase()) || 'guest@nexora.in';
-  const finalSubtotal = Number(subtotal) || items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const finalDiscount = Number(discount) || 0;
-  const finalPayable = Number(totalAmount) || Math.max(0, finalSubtotal - finalDiscount);
+  if (typeof shippingAddress !== 'string' || !shippingAddress.trim() || shippingAddress.length > 500) {
+    return res.status(400).json({ error: 'A valid delivery address is required.' });
+  }
 
-  const stmt = db.prepare(`
-    INSERT INTO orders (
-      order_id, user_email, items_json, subtotal, discount,
-      total_amount, payment_method, payment_status, payment_id,
-      shipping_address, city, state, pincode, status, tracking_stage
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Confirmed', 'Packed')
-  `);
+  const cleanPincode = String(pincode || '').trim();
+  if (!/^\d{6}$/.test(cleanPincode)) {
+    return res.status(400).json({ error: 'Enter a valid 6-digit Indian PIN code.' });
+  }
+
+  const trustedItems = [];
+  let subtotal = 0;
+
+  for (const item of items) {
+    const productId = Number(item && item.id);
+    const quantity = Number(item && item.qty);
+
+    if (!Number.isInteger(productId) || productId < 1 || !Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
+      return res.status(400).json({ error: 'One or more cart items are invalid.' });
+    }
+
+    const product = db.prepare('SELECT id, title, brand, price, image, stock, variants_json FROM products WHERE id = ?').get(productId);
+    if (!product) {
+      return res.status(400).json({ error: 'A product in your cart is no longer available. Refresh your cart.' });
+    }
+    if (Number(product.stock) < quantity) {
+      return res.status(409).json({ error: product.title + ' does not have enough stock for this quantity.' });
+    }
+
+    let variants = ['Standard'];
+    try {
+      variants = JSON.parse(product.variants_json || '["Standard"]');
+    } catch (err) {
+      variants = ['Standard'];
+    }
+
+    const requestedVariant = String((item && item.variant) || (variants[0] || 'Standard'));
+    if (Array.isArray(variants) && !variants.includes(requestedVariant)) {
+      return res.status(400).json({ error: 'The selected variant for ' + product.title + ' is unavailable.' });
+    }
+
+    const unitPrice = Number(product.price);
+    subtotal += unitPrice * quantity;
+    trustedItems.push({
+      id: product.id,
+      title: product.title,
+      brand: product.brand,
+      price: unitPrice,
+      image: product.image,
+      variant: requestedVariant,
+      qty: quantity
+    });
+  }
+
+  let discount = 0;
+  const cleanCoupon = String(couponCode || '').trim().toUpperCase();
+  if (cleanCoupon) {
+    const coupon = db.prepare('SELECT * FROM coupons WHERE code = ? AND active = 1').get(cleanCoupon);
+    if (!coupon) {
+      return res.status(400).json({ error: 'The coupon is invalid or has expired.' });
+    }
+    if (subtotal < Number(coupon.min_order || 0)) {
+      return res.status(400).json({ error: 'This coupon requires a minimum order of ₹' + Number(coupon.min_order).toLocaleString('en-IN') + '.' });
+    }
+    discount = Math.round((subtotal * Number(coupon.discount_percent)) / 100);
+    if (coupon.max_discount && discount > Number(coupon.max_discount)) {
+      discount = Number(coupon.max_discount);
+    }
+  }
+
+  const total = Math.max(0, subtotal - discount);
+  const orderId = 'NX-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+  const email = req.user.email.toLowerCase();
+
+  const stmt = db.prepare(
+    "INSERT INTO orders (order_id, user_id, user_email, items_json, subtotal, discount, total_amount, payment_method, payment_status, payment_id, shipping_address, city, state, pincode, status, tracking_stage) " +
+    "VALUES (?, ?, ?, ?, ?, ?, ?, 'Cash on Delivery (COD)', 'PENDING_ON_DELIVERY', NULL, ?, ?, ?, ?, 'Confirmed', 'Packed')"
+  );
 
   const info = stmt.run(
     orderId,
+    Number(req.user.id),
     email,
-    JSON.stringify(items),
-    finalSubtotal,
-    finalDiscount,
-    finalPayable,
-    paymentMethod || 'UPI (GPay / PhonePe / Paytm)',
-    paymentStatus || 'COMPLETED',
-    paymentId || `TXN_${Date.now()}`,
-    shippingAddress || 'Customer Address',
-    city || '',
-    state || '',
-    pincode || ''
+    JSON.stringify(trustedItems),
+    subtotal,
+    discount,
+    total,
+    shippingAddress.trim(),
+    String(city || '').slice(0, 100),
+    String(state || '').slice(0, 100),
+    cleanPincode
   );
 
   const orderRecord = db.prepare('SELECT * FROM orders WHERE id = ?').get(info.lastInsertRowid);
-  logApiCall('POST', '/api/orders', 201, `Order: ${orderId} by ${email}`);
-
+  logApiCall('POST', '/api/orders', 201, 'COD order ' + orderId + ' by ' + email);
   res.status(201).json(formatOrder(orderRecord));
 });
 
-// GET orders (optionally filter by email or query param)
-router.get('/', (req, res) => {
-  const { email } = req.query;
-
-  let query = 'SELECT * FROM orders';
-  const params = [];
-
-  if (email && email.trim()) {
-    query += ' WHERE LOWER(user_email) = ?';
-    params.push(email.trim().toLowerCase());
+// Customers can only see their own order history. Admins can inspect all orders.
+router.get('/', requireAuth, (req, res) => {
+  let rows;
+  if (req.user.role === 'admin') {
+    rows = db.prepare('SELECT * FROM orders ORDER BY id DESC').all();
+  } else {
+    rows = db.prepare('SELECT * FROM orders WHERE user_id = ? OR LOWER(user_email) = ? ORDER BY id DESC')
+      .all(Number(req.user.id), req.user.email.toLowerCase());
   }
 
-  query += ' ORDER BY id DESC';
-
-  const rows = db.prepare(query).all(...params);
   const orders = rows.map(formatOrder);
-
-  logApiCall('GET', '/api/orders', 200, `${orders.length} orders found`);
+  logApiCall('GET', '/api/orders', 200, orders.length + ' orders for authenticated account');
   res.json({ count: orders.length, orders });
 });
 
-// GET order by orderId
-router.get('/:orderId', (req, res) => {
-  const row = db.prepare('SELECT * FROM orders WHERE order_id = ?').get(req.params.orderId);
-  if (!row) {
-    logApiCall('GET', `/api/orders/${req.params.orderId}`, 404, 'Order not found');
-    return res.status(404).json({ error: 'Order not found' });
+// Order references are not public lookup keys; ownership is always checked.
+router.get('/:orderId', requireAuth, (req, res) => {
+  let row;
+  if (req.user.role === 'admin') {
+    row = db.prepare('SELECT * FROM orders WHERE order_id = ?').get(req.params.orderId);
+  } else {
+    row = db.prepare('SELECT * FROM orders WHERE order_id = ? AND (user_id = ? OR LOWER(user_email) = ?)')
+      .get(req.params.orderId, Number(req.user.id), req.user.email.toLowerCase());
   }
 
+  if (!row) {
+    return res.status(404).json({ error: 'Order not found.' });
+  }
   res.json(formatOrder(row));
 });
 
