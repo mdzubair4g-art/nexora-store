@@ -1,10 +1,12 @@
 import React from 'react';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 export function WishlistModal() {
   const { isWishlistOpen, setIsWishlistOpen, wishlistItems, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { user } = useAuth();
 
   if (!isWishlistOpen) return null;
 
@@ -30,7 +32,7 @@ export function WishlistModal() {
           {wishlistItems.length === 0 ? (
             <div className="text-center text-slate-500 text-sm py-12">
               <i className="fa-regular fa-heart text-4xl text-slate-300 block mb-2"></i>
-              Your wishlist is empty.
+              {user ? 'Your wishlist is empty.' : 'Sign in to save and view your wishlist.'}
             </div>
           ) : (
             wishlistItems.map(p => (
