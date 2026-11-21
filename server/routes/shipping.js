@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/pincode/:pincode', async (req, res) => {
   const pin = String(req.params.pincode || '').trim();
 
-  if (!/^\\d{6}$/.test(pin)) {
+  if (!/^[0-9]{6}$/.test(pin)) {
     logApiCall('GET', '/api/shipping/pincode', 400, 'Invalid PIN code format');
     return res.status(400).json({ error: 'Enter a valid 6-digit Indian PIN code.' });
   }
