@@ -30,16 +30,17 @@ function formatOrder(o) {
 // Create an authenticated Cash on Delivery order.
 // Product prices and coupon discounts are recalculated on the server.
 router.post('/', requireAuth, (req, res) => {
+  const body = req.body || {};
   const {
     items, couponCode, recipientName, recipientPhone,
     addressLine, city, state, pincode
-  } = req.body || {};
+  } = body;
 
   if (!Array.isArray(items) || items.length === 0 || items.length > 30) {
     return res.status(400).json({ error: 'Add between 1 and 30 valid items to your order.' });
   }
 
-  const cleanIdempotencyKey = String(req.body.idempotencyKey || '').trim();
+  const cleanIdempotencyKey = String(body.idempotencyKey || '').trim();
   if (!/^[A-Za-z0-9_-]{16,100}$/.test(cleanIdempotencyKey)) {
     return res.status(400).json({ error: 'A valid order request key is required. Please retry checkout.' });
   }
