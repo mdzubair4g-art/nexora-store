@@ -15,7 +15,7 @@ if (isPostgres) {
     connectionTimeoutMillis: 8000,
     allowExitOnIdle: true,
     keepAlive: true,
-    ssl: process.env.DATABASE_SSL === 'false' ? false : (process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : undefined)
+    ssl: process.env.DATABASE_SSL === 'disable' ? false : undefined
   });
   pool.on('error', error => console.error('PostgreSQL pool error:', error.message));
 } else {
