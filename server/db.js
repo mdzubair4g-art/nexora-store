@@ -130,6 +130,38 @@ if (DatabaseSync) {
   } catch (err) {
     console.error('Auto-seed check error:', err);
   }
+
+  // The committed SQLite file includes local demo accounts. Never expose those
+  // predictable credentials in a public serverless deployment.
+  if (isServerless) {
+    const configuredAdminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+    const configuredAdminPassword = String(process.env.ADMIN_PASSWORD || '');
+
+    for (const demoEmail of ['alex@nexora.in', 'admin@nexora.in']) {
+      if (demoEmail !== configuredAdminEmail) {
+        db.prepare('DELETE FROM wishlist WHERE LOWER(user_email) = ?').run(demoEmail);
+        db.prepare('DELETE FROM users WHERE LOWER(email) = ?').run(demoEmail);
+      }
+    }
+
+    if (configuredAdminEmail || configuredAdminPassword) {
+      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(configuredAdminEmail) || configuredAdminPassword.length < 16) {
+        throw new Error('Set a valid ADMIN_EMAIL and an ADMIN_PASSWORD of at least 16 characters.');
+      }
+
+      const bcrypt = require('bcryptjs');
+      const passwordHash = bcrypt.hashSync(configuredAdminPassword, 12);
+      const existingAdmin = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(configuredAdminEmail);
+
+      if (existingAdmin) {
+        db.prepare('UPDATE users SET name = ?, password_hash = ?, role = ? WHERE id = ?')
+          .run('NEXORA Admin', passwordHash, 'admin', existingAdmin.id);
+      } else {
+        db.prepare('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)')
+          .run('NEXORA Admin', configuredAdminEmail, passwordHash, 'admin');
+      }
+    }
+  }
 }
 
 function logApiCall(method, endpoint, statusCode, details = '') {
