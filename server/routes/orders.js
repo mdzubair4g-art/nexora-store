@@ -114,19 +114,43 @@ router.post('/', requireAuth, (req, res) => {
     "VALUES (?, ?, ?, ?, ?, ?, ?, 'Cash on Delivery (COD)', 'PENDING_ON_DELIVERY', NULL, ?, ?, ?, ?, 'Confirmed', 'Packed')"
   );
 
-  const info = stmt.run(
-    orderId,
-    Number(req.user.id),
-    email,
-    JSON.stringify(trustedItems),
-    subtotal,
-    discount,
-    total,
-    shippingAddress.trim(),
-    String(city || '').slice(0, 100),
-    String(state || '').slice(0, 100),
-    cleanPincode
-  );
+  let info;
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    // Decrement stock inside the same transaction as order creation.
+    for (const item of trustedItems) {
+      const stockUpdate = db.prepare(
+        'UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?'
+      ).run(item.qty, item.id, item.qty);
+
+      if (stockUpdate.changes !== 1) {
+        const stockError = new Error('A product in your cart no longer has enough stock.');
+        stockError.code = 'INSUFFICIENT_STOCK';
+        throw stockError;
+      }
+    }
+
+    info = stmt.run(
+      orderId,
+      Number(req.user.id),
+      email,
+      JSON.stringify(trustedItems),
+      subtotal,
+      discount,
+      total,
+      shippingAddress.trim(),
+      String(city || '').slice(0, 100),
+      String(state || '').slice(0, 100),
+      cleanPincode
+    );
+    db.exec('COMMIT');
+  } catch (err) {
+    db.exec('ROLLBACK');
+    if (err.code === 'INSUFFICIENT_STOCK') {
+      return res.status(409).json({ error: err.message + ' Please refresh your cart.' });
+    }
+    throw err;
+  }
 
   const orderRecord = db.prepare('SELECT * FROM orders WHERE id = ?').get(info.lastInsertRowid);
   logApiCall('POST', '/api/orders', 201, 'COD order ' + orderId + ' by ' + email);
