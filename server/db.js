@@ -125,7 +125,7 @@ if (DatabaseSync) {
     if (!countCheck || countCheck.count === 0) {
       console.log('Database empty, auto-seeding products...');
       // Export the initialized connection before seed.js imports this module.
-      module.exports = { db, logApiCall };
+      module.exports = { db, logApiCall, isServerless };
       const { seed } = require('./seed');
       seed();
     }
@@ -188,5 +188,6 @@ function logApiCall(method, endpoint, statusCode, details = '') {
 
 module.exports = {
   db,
-  logApiCall
+  logApiCall,
+  isServerless
 };
