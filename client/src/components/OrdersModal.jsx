@@ -10,7 +10,7 @@ export function OrdersModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       setLoading(true);
-      api.getOrders(user?.email || '')
+      api.getOrders()
         .then(data => setOrders(data.orders || []))
         .catch(err => console.error('Failed to load orders:', err))
         .finally(() => setLoading(false));
@@ -34,7 +34,7 @@ export function OrdersModal({ isOpen, onClose }) {
           <h3 className="text-xl font-black text-slate-900">Order History & Live Tracking</h3>
         </div>
         <p className="text-xs text-slate-500 mb-4">
-          Real-time delivery milestones stored in your SQLite database.
+          Your order history is linked to your signed-in account.
         </p>
 
         <div className="flex-1 overflow-y-auto space-y-4">
@@ -57,7 +57,7 @@ export function OrdersModal({ isOpen, onClose }) {
                     <strong className="text-slate-800">{o.date}</strong>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500 block uppercase">Total Paid</span>
+                    <span className="text-[10px] text-slate-500 block uppercase">Order Total</span>
                     <strong className="text-slate-900">₹{o.totalAmount.toLocaleString('en-IN')}</strong>
                   </div>
                   <div>
