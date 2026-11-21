@@ -31,7 +31,7 @@ export function OrdersModal({ isOpen, onClose }) {
 
         <div className="flex items-center gap-2 mb-1">
           <i className="fa-solid fa-truck-ramp-box text-cyan-600 text-lg"></i>
-          <h3 className="text-xl font-black text-slate-900">Order History & Live Tracking</h3>
+          <h3 className="text-xl font-black text-slate-900">Order History & Status</h3>
         </div>
         <p className="text-xs text-slate-500 mb-4">
           Your order history is linked to your signed-in account.
