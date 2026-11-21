@@ -36,6 +36,7 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     platform: 'NEXORA.in Full-Stack Engine',
     database: 'SQLite (Node.js native DatabaseSync)',
+    persistence: process.env.VERCEL ? 'Ephemeral serverless storage; connect a managed database before production use.' : 'Local SQLite file storage',
     timestamp: new Date().toISOString()
   });
 });
