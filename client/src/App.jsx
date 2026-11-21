@@ -26,7 +26,6 @@ export function App() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
-  // Filters & Search
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,10 +34,8 @@ export function App() {
   const [flashOnly, setFlashOnly] = useState(false);
   const [catalogTitle, setCatalogTitle] = useState('All Collections Catalog');
 
-  // Location
   const [deliveryLocation, setDeliveryLocation] = useState('Bengaluru 560001');
 
-  // Modals & Views
   const [activeProductDetail, setActiveProductDetail] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
@@ -46,7 +43,7 @@ export function App() {
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [isServerDrawerOpen, setIsServerDrawerOpen] = useState(false);
 
-  // Fetch products from SQLite Backend API
+  // Fetch products from the backend API (SQLite locally, PostgreSQL in deployments).
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -113,9 +110,7 @@ export function App() {
 
   const handleChangeLocation = () => {
     const loc = prompt('Enter delivery city and 6-digit Indian PIN code:', deliveryLocation);
-    if (loc && loc.trim()) {
-      setDeliveryLocation(loc.trim());
-    }
+    if (loc && loc.trim()) setDeliveryLocation(loc.trim());
   };
 
   const handleBuyNow = (product, variant) => {
@@ -177,7 +172,6 @@ export function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top Navigation */}
       <Navbar
         selectedCategory={selectedCategory}
         onSelectCategory={handleSelectCategory}
@@ -192,7 +186,6 @@ export function App() {
         onToggleServerDrawer={toggleServerDrawer}
       />
 
-      {/* Subcategory Bar */}
       <CategoryBar
         selectedCategory={selectedCategory}
         onSelectCategory={handleSelectCategory}
@@ -200,7 +193,6 @@ export function App() {
         onOpenSeller={openSeller}
       />
 
-      {/* Main Content: Either Product Detail or Home Storefront */}
       {activeProductDetail ? (
         <ProductDetailModal
           product={activeProductDetail}
@@ -210,30 +202,19 @@ export function App() {
         />
       ) : (
         <div className="flex-1">
-          {/* Hero Slider */}
           <HeroBanner
             onShopFlashDeals={handleSelectFlashDeals}
             onExploreCatalog={scrollToCatalog}
           />
-
-          {/* Department Grid */}
           <DepartmentGrid
             onSelectCategory={handleSelectCategory}
             onResetCategory={() => handleSelectCategory('All')}
           />
-
-          {/* Curated Lifestyle Edits */}
-          <CuratedCollections
-            onSelectCollection={handleSelectCollection}
-          />
-
-          {/* Flash Deals Row */}
+          <CuratedCollections onSelectCollection={handleSelectCollection} />
           <FlashDeals
             deals={flashDealsList}
-            onOpenProductDetail={(p) => setActiveProductDetail(p)}
+            onOpenProductDetail={(product) => setActiveProductDetail(product)}
           />
-
-          {/* Main Product Catalog */}
           <ProductCatalog
             catalogTitle={catalogTitle}
             products={products}
@@ -244,33 +225,38 @@ export function App() {
             onChangePriceFilter={setPriceFilter}
             sortSelect={sortSelect}
             onChangeSort={setSortSelect}
-            onOpenProductDetail={(p) => setActiveProductDetail(p)}
+            onOpenProductDetail={(product) => setActiveProductDetail(product)}
           />
         </div>
       )}
 
-      {/* Footer */}
       <footer className="mt-auto">
         <button
+          type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs py-3 font-bold tracking-wide transition"
         >
           Back to Top ↑
         </button>
         <div className="nav-glass text-slate-300 text-xs py-8 px-4 text-center border-t border-indigo-900/40">
+          <img
+            src="/nexora-mark.svg"
+            alt=""
+            aria-hidden="true"
+            width="36"
+            height="36"
+            className="w-9 h-9 mx-auto mb-2"
+          />
           <div className="text-lg font-black text-white tracking-wider mb-1">
             NEXORA<span className="text-cyan-400">.in</span>
           </div>
           <p className="text-slate-400">
-            8 Departments • Curated products • Account-based wishlist • Cash on Delivery
+            Curated marketplace • 8 departments • Account-based wishlist • Cash on Delivery
           </p>
         </div>
       </footer>
 
-      {/* Slide-out & Modal Components */}
-      <CartDrawer
-        onProceedToCheckout={proceedToCheckout}
-      />
+      <CartDrawer onProceedToCheckout={proceedToCheckout} />
 
       <CheckoutModal
         isOpen={isCheckoutModalOpen}

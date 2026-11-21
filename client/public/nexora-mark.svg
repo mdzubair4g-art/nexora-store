@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">NEXORA brand mark</title>
+  <desc id="desc">A modern angular N monogram in cyan, violet and warm orange.</desc>
+  <defs>
+    <linearGradient id="tile" x1="4" y1="4" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1e293b"/>
+      <stop offset="1" stop-color="#17133f"/>
+    </linearGradient>
+    <linearGradient id="stroke" x1="13" y1="14" x2="53" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee"/>
+      <stop offset=".56" stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#fb923c"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="17" fill="url(#tile)"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="16.25" stroke="#94a3b8" stroke-opacity=".25" stroke-width="1.5"/>
+  <path d="M16 47V17L48 47V17" fill="none" stroke="url(#stroke)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="49" cy="14" r="3.25" fill="#67e8f9"/>
+</svg>
