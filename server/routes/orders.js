@@ -111,7 +111,7 @@ router.post('/', requireAuth, (req, res) => {
 
   const stmt = db.prepare(
     "INSERT INTO orders (order_id, user_id, user_email, items_json, subtotal, discount, total_amount, payment_method, payment_status, payment_id, shipping_address, city, state, pincode, status, tracking_stage) " +
-    "VALUES (?, ?, ?, ?, ?, ?, ?, 'Cash on Delivery (COD)', 'PENDING_ON_DELIVERY', NULL, ?, ?, ?, ?, 'Confirmed', 'Packed')"
+    "VALUES (?, ?, ?, ?, ?, ?, ?, 'Cash on Delivery (COD)', 'PENDING_ON_DELIVERY', NULL, ?, ?, ?, ?, 'Confirmed', 'Confirmed')"
   );
 
   let info;
