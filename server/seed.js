@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { db } = require('./db');
+const { query, transaction } = require('./db');
 
 const SEED_PRODUCTS = [
   {
@@ -364,81 +364,34 @@ const SEED_PRODUCTS = [
   }
 ];
 
-function seed() {
-  console.log('Seeding SQLite database...');
-
-  // Clear existing items for clean seeding
-  db.exec(`
-    DELETE FROM products;
-    DELETE FROM reviews;
-    DELETE FROM coupons;
-    DELETE FROM users;
-  `);
-
-  // Predictable sample users are only created for local development.
-  if (!process.env.VERCEL) {
-    const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync('nexora123', salt);
-
-    const insertUser = db.prepare(`
-      INSERT INTO users (name, email, password_hash, role)
-      VALUES (?, ?, ?, ?)
-    `);
-    insertUser.run("Alex Mercer", "alex@nexora.in", passwordHash, "shopper");
-    insertUser.run("NEXORA Admin", "admin@nexora.in", passwordHash, "admin");
-  }
-
-  // Seed Coupons
-  const insertCoupon = db.prepare(`
-    INSERT INTO coupons (code, discount_percent, max_discount, min_order, active)
-    VALUES (?, ?, ?, ?, ?)
-  `);
-  insertCoupon.run("NEXORA10", 10, 1500, 999, 1);
-  insertCoupon.run("WELCOME20", 20, 2000, 1499, 1);
-  insertCoupon.run("FESTIVE500", 15, 500, 2499, 1);
-
-  // Seed Products & Reviews
-  const insertProd = db.prepare(`
-    INSERT INTO products (
-      title, brand, category, collection, price, mrp,
-      rating, reviews_count, flash_deal, variants_json, image, highlights_json, stock
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-
-  for (const p of SEED_PRODUCTS) {
-    const res = insertProd.run(
-      p.title,
-      p.brand,
-      p.category,
-      p.collection,
-      p.price,
-      p.mrp,
-      0,
-      0,
-      p.flashDeal,
-      JSON.stringify(p.variants),
-      p.image,
-      JSON.stringify(p.highlights),
-      45
-    );
-
-    const productId = res.lastInsertRowid;
-  }
-
-  // Local demo wishlist only; production wishlists belong to registered users.
-  if (!process.env.VERCEL) {
-    const insertWish = db.prepare(`
-      INSERT INTO wishlist (user_email, product_id) VALUES (?, ?)
-    `);
-    insertWish.run("alex@nexora.in", 1);
-    insertWish.run("alex@nexora.in", 7);
-  }
-
-  console.log(`Seeding complete: ${SEED_PRODUCTS.length} products, demo coupons, and demo accounts created.`);
+async function seed() {
+  console.log('Seeding NEXORA catalogue...');
+  await transaction(async tx => {
+    await tx.query('DELETE FROM wishlist');
+    await tx.query('DELETE FROM reviews');
+    await tx.query('DELETE FROM orders');
+    await tx.query('DELETE FROM products');
+    await tx.query('DELETE FROM coupons');
+    if (!process.env.VERCEL) {
+      const hash = await bcrypt.hash('nexora123', 10);
+      await tx.query("INSERT INTO users(name,email,password_hash,role) VALUES('Alex Mercer','alex@nexora.in',?,'shopper') ON CONFLICT(email) DO NOTHING", [hash]);
+      await tx.query("INSERT INTO users(name,email,password_hash,role) VALUES('NEXORA Admin','admin@nexora.in',?,'admin') ON CONFLICT(email) DO NOTHING", [hash]);
+    }
+    for (const [code, percent, cap, minimum] of [['NEXORA10',10,1500,999],['WELCOME20',20,2000,1499],['FESTIVE500',15,500,2499]]) {
+      await tx.query('INSERT INTO coupons(code,discount_percent,max_discount,min_order,active) VALUES(?,?,?,?,1) ON CONFLICT(code) DO NOTHING', [code,percent,cap,minimum]);
+    }
+    for (const product of SEED_PRODUCTS) {
+      await tx.query('INSERT INTO products(title,brand,category,collection,price,mrp,rating,reviews_count,flash_deal,variants_json,image,highlights_json,stock) VALUES(?,?,?,?,?,?,0,0,?,?,?,?,45)',
+        [product.title,product.brand,product.category,product.collection,product.price,product.mrp,product.flashDeal,JSON.stringify(product.variants),product.image,JSON.stringify(product.highlights)]);
+    }
+    if (!process.env.VERCEL) {
+      await tx.query("INSERT INTO wishlist(user_email,product_id) VALUES('alex@nexora.in',1) ON CONFLICT(user_email,product_id) DO NOTHING");
+      await tx.query("INSERT INTO wishlist(user_email,product_id) VALUES('alex@nexora.in',7) ON CONFLICT(user_email,product_id) DO NOTHING");
+    }
+  });
+  console.log('Seed complete: ' + SEED_PRODUCTS.length + ' products and coupon codes.');
 }
-
 if (require.main === module) {
-  seed();
+  require('./db').databaseReady.then(seed).catch(error => { console.error(error); process.exitCode = 1; });
 }
-
 module.exports = { seed };

@@ -1,7 +1,7 @@
 {
   "name": "nexora-server",
   "version": "1.0.0",
-  "description": "NEXORA.in Full-Stack E-Commerce REST API Backend",
+  "description": "NEXORA.in REST API with PostgreSQL production storage and SQLite local development",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -12,6 +12,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.23.1"
   }
 }
