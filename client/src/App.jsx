@@ -255,7 +255,7 @@ export function App() {
             NEXORA<span className="text-cyan-400">.in</span>
           </div>
           <p className="text-slate-400">
-            8 Departments • React 18 + Tailwind CSS • Node.js Native SQLite REST API • Express Checkout & Pincode Routing
+            8 Departments • Curated products • Account-based wishlist • Cash on Delivery
           </p>
         </div>
       </footer>
