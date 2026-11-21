@@ -51,11 +51,13 @@ if (DatabaseSync) {
     CREATE TABLE IF NOT EXISTS reviews (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       product_id INTEGER NOT NULL,
+      user_id INTEGER,
       user_name TEXT NOT NULL,
-      rating INTEGER NOT NULL,
+      rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
       comment TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS orders (
@@ -105,6 +107,13 @@ if (DatabaseSync) {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  // Upgrade existing local databases without deleting customer reviews.
+  const reviewColumns = db.prepare('PRAGMA table_info(reviews)').all().map(column => column.name);
+  if (!reviewColumns.includes('user_id')) {
+    db.exec('ALTER TABLE reviews ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE SET NULL');
+  }
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_product_user ON reviews(product_id, user_id) WHERE user_id IS NOT NULL');
 
   // Auto-seed if products table is empty (e.g. fresh cold start on Vercel)
   try {
