@@ -6,30 +6,37 @@ const WishlistContext = createContext();
 
 export function WishlistProvider({ children }) {
   const { user } = useAuth();
-  const [wishlistIds, setWishlistIds] = useState([1, 7]);
+  const [wishlistIds, setWishlistIds] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
-  const userEmail = user?.email || 'alex@nexora.in';
-
   const refreshWishlist = async () => {
+    if (!user) {
+      setWishlistIds([]);
+      setWishlistItems([]);
+      return;
+    }
+
     try {
-      const data = await api.getWishlist(userEmail);
+      const data = await api.getWishlist();
       setWishlistIds(data.productIds || []);
       setWishlistItems(data.items || []);
     } catch (err) {
       console.error('Failed to load wishlist:', err);
+      setWishlistIds([]);
+      setWishlistItems([]);
     }
   };
 
   useEffect(() => {
     refreshWishlist();
-  }, [userEmail]);
+  }, [user?.id]);
 
   const toggleWishlist = async (productId) => {
+    if (!user) return;
     try {
-      const res = await api.toggleWishlist(userEmail, productId);
-      setWishlistIds(res.productIds);
+      const result = await api.toggleWishlist(productId);
+      setWishlistIds(result.productIds || []);
       await refreshWishlist();
     } catch (err) {
       console.error('Wishlist toggle error:', err);
