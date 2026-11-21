@@ -10,7 +10,8 @@
     "server": "node server/server.js",
     "client": "npm run dev --prefix client",
     "seed": "node server/seed.js",
-    "build": "cd client && npm install && npm run build"
+    "build": "cd client && npm install && npm run build",
+    "test": "node --test"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
