@@ -9,12 +9,22 @@ const router = express.Router();
 // Register new user
 router.post('/register', (req, res) => {
   const { name, email, password } = req.body;
-  if (!email || !password) {
+  if (typeof email !== 'string' || typeof password !== 'string') {
     logApiCall('POST', '/api/auth/register', 400, 'Missing email/password');
-    return res.status(400).json({ error: 'Email and password are required' });
+    return res.status(400).json({ error: 'A valid email and password are required.' });
   }
 
-  const cleanEmail = email.toLowerCase().trim();
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanName = typeof name === 'string' ? name.trim() : '';
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(cleanEmail) || cleanEmail.length > 254) {
+    return res.status(400).json({ error: 'Enter a valid email address.' });
+  }
+  if (password.length < 8 || password.length > 128) {
+    return res.status(400).json({ error: 'Password must be between 8 and 128 characters.' });
+  }
+  if (cleanName.length > 80) {
+    return res.status(400).json({ error: 'Name must be 80 characters or fewer.' });
+  }
   const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(cleanEmail);
   if (existing) {
     logApiCall('POST', '/api/auth/register', 409, `Conflict: ${cleanEmail}`);
@@ -23,7 +33,7 @@ router.post('/register', (req, res) => {
 
   const salt = bcrypt.genSaltSync(10);
   const passwordHash = bcrypt.hashSync(password, salt);
-  const displayName = name ? name.trim() : cleanEmail.split('@')[0];
+  const displayName = cleanName || cleanEmail.split('@')[0];
 
   const stmt = db.prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)');
   const info = stmt.run(displayName, cleanEmail, passwordHash);
@@ -38,12 +48,15 @@ router.post('/register', (req, res) => {
 // Login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
+  if (typeof email !== 'string' || typeof password !== 'string' || password.length > 128) {
     logApiCall('POST', '/api/auth/login', 400, 'Missing credentials');
-    return res.status(400).json({ error: 'Email and password are required' });
+    return res.status(400).json({ error: 'Email and password are required.' });
   }
 
-  const cleanEmail = email.toLowerCase().trim();
+  const cleanEmail = email.trim().toLowerCase();
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(cleanEmail) || cleanEmail.length > 254) {
+    return res.status(400).json({ error: 'Enter a valid email address.' });
+  }
   const userRecord = db.prepare('SELECT * FROM users WHERE email = ?').get(cleanEmail);
   if (!userRecord) {
     logApiCall('POST', '/api/auth/login', 401, `Invalid user: ${cleanEmail}`);
