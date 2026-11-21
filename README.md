@@ -66,7 +66,13 @@ Open http://localhost:3000.
 
 ## Environment variables
 
-Create a local .env file for local-only overrides. Do not commit it.
+Copy the safe template to a local .env file and replace the placeholders. Do not commit .env.
+
+~~~powershell
+Copy-Item .env.example .env
+~~~
+
+Then set these values in .env:
 
 ~~~env
 JWT_SECRET=replace-with-a-long-random-secret
