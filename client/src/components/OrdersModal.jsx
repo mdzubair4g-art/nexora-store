@@ -69,24 +69,24 @@ export function OrdersModal({ isOpen, onClose }) {
                 <div className="p-4 space-y-3">
                   {/* Tracking Stages Timeline */}
                   <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-400">
-                      <span className="text-emerald-700 flex items-center gap-1">
-                        <i className="fa-solid fa-circle-check"></i> Confirmed
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-slate-500">
+                      <span className={['Confirmed', 'Packed', 'In Transit', 'Delivered'].includes(o.trackingStage) ? 'text-emerald-700' : 'text-slate-400'}>
+                        <i className="fa-solid fa-circle-check mr-1"></i>Confirmed
                       </span>
-                      <span className="text-emerald-700 flex items-center gap-1">
-                        <i className="fa-solid fa-circle-check"></i> Packed
+                      <span className={['Packed', 'In Transit', 'Delivered'].includes(o.trackingStage) ? 'text-emerald-700' : 'text-slate-400'}>
+                        <i className="fa-solid fa-box mr-1"></i>Packed
                       </span>
-                      <span className="text-cyan-700 flex items-center gap-1">
-                        <i className="fa-solid fa-circle-dot animate-pulse"></i> In Transit
+                      <span className={['In Transit', 'Delivered'].includes(o.trackingStage) ? 'text-cyan-700' : 'text-slate-400'}>
+                        <i className="fa-solid fa-truck mr-1"></i>In Transit
                       </span>
-                      <span className="flex items-center gap-1">
-                        <i className="fa-regular fa-circle"></i> Delivered
+                      <span className={o.trackingStage === 'Delivered' ? 'text-emerald-700' : 'text-slate-400'}>
+                        <i className="fa-solid fa-house-circle-check mr-1"></i>Delivered
                       </span>
                     </div>
                   </div>
 
                   <div className="text-slate-600 text-[11px]">
-                    Delivering to: <strong className="text-slate-900">{o.shippingAddress}</strong> • Payment via: <strong className="text-slate-900">{o.paymentMethod}</strong>
+                    Status: <strong className="text-slate-900">{o.status}</strong> • Delivering to: <strong className="text-slate-900">{o.shippingAddress}</strong> • Payment via: <strong className="text-slate-900">{o.paymentMethod}</strong>
                   </div>
 
                   <div className="space-y-1.5 pt-1 border-t">
