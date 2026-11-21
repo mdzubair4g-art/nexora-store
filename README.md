@@ -1,114 +1,103 @@
-# NEXORA.in — Full-Stack E-Commerce Marketplace Platform
+# NEXORA.in — E-commerce Storefront
 
-A modern, production-grade e-commerce application ported from a single-file prototype into a decoupled, modular full-stack architecture with **React 18 + Vite + Tailwind CSS**, **Node.js Express REST API**, **native SQLite database**, and **Payment & PIN Code Shipping Integrations**.
+NEXORA is a responsive marketplace demo built with React, Vite, Tailwind CSS, Express, and SQLite. It includes product browsing, search and filters, a shopping bag, coupons, account registration, wishlists, order history, and an administrator-only seller area.
 
----
+> **Deployment note:** The current Vercel adapter copies SQLite into /tmp. That storage is temporary and isolated between serverless instances. This project is suitable for development and demos, but it is not ready to process real customer orders until SQLite is replaced with a managed persistent database (for example, Neon Postgres or another hosted database).
 
-## Architecture Overview
+## Stack
 
-```text
-nexora-store/
-├── client/                     # Frontend (React 18, Vite, Tailwind CSS)
-│   ├── src/
-│   │   ├── components/         # Modular UI Components
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── CategoryBar.jsx
-│   │   │   ├── HeroBanner.jsx
-│   │   │   ├── DepartmentGrid.jsx
-│   │   │   ├── CuratedCollections.jsx
-│   │   │   ├── FlashDeals.jsx
-│   │   │   ├── ProductCatalog.jsx
-│   │   │   ├── ProductCard.jsx
-│   │   │   ├── ProductDetailModal.jsx
-│   │   │   ├── CartDrawer.jsx
-│   │   │   ├── CheckoutModal.jsx      # PIN code resolver & multi-gateway payments
-│   │   │   ├── AuthModal.jsx          # JWT authentication
-│   │   │   ├── WishlistModal.jsx
-│   │   │   ├── OrdersModal.jsx        # Live milestone order tracking
-│   │   │   ├── SellerModal.jsx        # Direct database catalog publisher
-│   │   │   └── ApiDrawer.jsx          # Live SQLite stats & REST traffic inspector
-│   │   ├── context/
-│   │   │   ├── AuthContext.jsx
-│   │   │   ├── CartContext.jsx
-│   │   │   └── WishlistContext.jsx
-│   │   └── services/
-│   │       └── api.js                 # Centralized fetch client
-│   └── dist/                          # Compiled production assets
-│
-├── server/                     # Backend (Node.js Express + Native SQLite)
-│   ├── db.js                   # Node 26 node:sqlite DatabaseSync & schema
-│   ├── seed.js                 # 24 products, coupons, and test user seeder
-│   ├── nexora.db               # SQLite database file
-│   ├── middleware/
-│   │   └── auth.js             # JWT bearer verification middleware
-│   └── routes/
-│       ├── auth.js             # /api/auth (register, login, me)
-│       ├── products.js         # /api/products (filter, sort, search, review)
-│       ├── orders.js           # /api/orders (placement, tracking, history)
-│       ├── wishlist.js         # /api/wishlist (toggle, get by user)
-│       ├── coupons.js          # /api/coupons (apply code, validation)
-│       ├── shipping.js         # /api/shipping (pincode lookup & delivery ETA)
-│       ├── payments.js         # /api/payments (Razorpay/Stripe order & verify)
-│       └── stats.js            # /api/stats (database metrics & traffic logs)
-│
-├── standalone.html             # Original self-contained single-file prototype
-└── package.json                # Project root runner scripts
-```
+- Frontend: React 18, Vite, Tailwind CSS
+- Backend: Node.js, Express REST API
+- Local database: Node.js native SQLite
+- Authentication: JWT bearer tokens and bcrypt password hashing
+- Hosting configuration: Vercel
 
----
+## Main features
 
-## Features Implemented
+- Responsive product catalogue with department, collection, price, search, and sort filters
+- Product details, cart, and coupon validation
+- Account registration and sign-in
+- Per-account wishlist and order history
+- Administrator-only product publishing and API statistics
+- Indian PIN-code lookup via the India Post postal API, with a small verified fallback directory
+- Cash on Delivery checkout
 
-### 1. Modern Frontend (React 18 + Vite + Tailwind CSS)
-* **Modular React Components**: Reusable components separated cleanly with typed prop contracts.
-* **Context State Management**: `CartContext`, `AuthContext`, and `WishlistContext` managing real-time states across tabs and modals.
-* **Responsive UI**: Tailwind CSS glassmorphic header, custom gradients, slide-over drawer animations, and mobile-friendly layouts.
+## Security notes
 
-### 2. Real Backend & Native SQLite Database
-* **Zero External Build Tool Requirement**: Uses Node.js's built-in `node:sqlite` (`DatabaseSync`), ensuring lightning-fast startup with zero `node-gyp` or Python compiler dependencies on Windows.
-* **Persistent Relational Tables**: `products`, `users`, `orders`, `reviews`, `wishlist`, `coupons`, and `api_logs`.
-* **JWT Authentication & Bcrypt Password Hashing**: Secure user registration and session management.
+- Order and wishlist routes require a signed-in account. The server derives the account identity from the JWT; clients cannot select another customer's email.
+- Order item prices and coupon discounts are recalculated on the server.
+- Product publishing and internal statistics require an administrator account.
+- Online payment endpoints are intentionally disabled. The previous mock verification flow did not process a real payment, so checkout now supports Cash on Delivery only.
+- Production requires a private JWT_SECRET. Vercel deployments remove the public local demo accounts.
+- Never commit .env files or production credentials.
 
-### 3. Shipping & Payment Integrations
-* **Indian PIN Code Lookup (`/api/shipping/pincode/:pincode`)**:
-  * Real-time resolution of 6-digit PIN codes to City, District, State, and Fulfillment Hub.
-  * Live integration with India Post Postal Pincode API with instant fallback for major metro hubs (Bengaluru, Delhi, Mumbai, Hyderabad, Chennai, Pune, Kolkata).
-  * Automated delivery date calculation (Next-Day Express vs Standard).
-* **Payment Gateway Workflow (`/api/payments`)**:
-  * Gateway order creation compatible with Razorpay / Stripe formats (`create-order`).
-  * Instant UPI integration (Google Pay, PhonePe, Paytm, CRED).
-  * Card authorization simulation with transaction references (`verify`).
-  * Cash on Delivery (COD) order management.
+## Local setup
 
----
+Use Node.js 22.13 or newer for native SQLite support.
 
-## Quickstart Guide
+Install dependencies:
 
-### 1. Start the Server & Application
-From the `nexora-store` root folder:
-```powershell
-# Run the complete server (serves API on :5000 and compiled React app)
+~~~powershell
+npm install
+cd client
+npm install
+cd ..
+~~~
+
+Start the Express server:
+
+~~~powershell
 npm start
-```
-Open **`http://localhost:5000`** in your browser.
+~~~
 
-### 2. Development Mode (Hot-Reloading)
-To run with live Vite HMR:
-```powershell
-# Terminal 1: Run Backend API
+Open http://localhost:5000.
+
+For Vite hot reload, use two terminals:
+
+~~~powershell
+# Terminal 1 — API
 npm run server
 
-# Terminal 2: Run Vite Dev Server
+# Terminal 2 — frontend
 npm run client
-```
-Open **`http://localhost:3000`** in your browser.
+~~~
 
-### 3. Re-seed Database
-```powershell
+Open http://localhost:3000.
+
+## Environment variables
+
+Create a local .env file for local-only overrides. Do not commit it.
+
+~~~env
+JWT_SECRET=replace-with-a-long-random-secret
+ADMIN_EMAIL=your-admin-email@example.com
+ADMIN_PASSWORD=use-a-unique-password-at-least-16-characters-long
+~~~
+
+For Vercel, add JWT_SECRET, ADMIN_EMAIL, and ADMIN_PASSWORD as encrypted environment variables for the Production and Preview environments. Set them in Project Settings → Environment Variables. The configured admin email is promoted to the administrator role at startup.
+
+## Local demo accounts
+
+The local seed script creates these demo accounts when run outside Vercel:
+
+- Shopper: alex@nexora.in / nexora123
+- Admin: admin@nexora.in / nexora123
+
+These credentials are for local demos only. Do not use them on a public deployment.
+
+## Useful commands
+
+~~~powershell
 npm run seed
-```
+npm run build
+~~~
 
-### 4. Test Accounts
-* **Shopper**: `alex@nexora.in` / `nexora123`
-* **Admin**: `admin@nexora.in` / `nexora123`
-* **Demo Promo Codes**: `NEXORA10` (10% off), `WELCOME20` (20% off), `FESTIVE500` (₹500 off)
+The seed command resets the local catalogue, reviews, coupons, and local demo users. It should not be run against a database containing customer data.
+
+## Before accepting real orders
+
+1. Replace the temporary serverless SQLite copy with a managed persistent database.
+2. Configure a real payment provider only after implementing server-side signature verification and webhooks. Until then, keep Cash on Delivery only.
+3. Configure delivery partners and verify serviceability and estimated delivery with a real shipping service.
+4. Add automated tests, monitoring, backups, and privacy/terms pages.
+5. Review product images, prices, inventory, and marketplace legal requirements.
