@@ -47,7 +47,7 @@ app.get('/api/health', (req, res) => {
     database: 'SQLite (Node.js native DatabaseSync)',
     persistence: isServerless ? 'Temporary serverless SQLite; customer data cannot be stored safely.' : 'Local SQLite file storage',
     commerceReady: !isServerless && isJwtSecretConfigured,
-    capabilities: { catalogue: 'available', accounts: !isServerless && Boolean(JWT_SECRET) ? 'available' : 'disabled', orders: !isServerless && Boolean(JWT_SECRET) ? 'available' : 'disabled' },
+    capabilities: { catalogue: 'available', accounts: !isServerless && isJwtSecretConfigured ? 'available' : 'disabled', orders: !isServerless && isJwtSecretConfigured ? 'available' : 'disabled' },
     timestamp: new Date().toISOString()
   });
 });
