@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
 const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 const JWT_SECRET = process.env.JWT_SECRET || (isProduction ? null : 'nexora_local_development_only_change_me');
+const isJwtSecretConfigured = typeof JWT_SECRET === 'string' && Buffer.byteLength(JWT_SECRET, 'utf8') >= 32;
 
 function persistentDatabaseAvailable(env = process.env) {
   // The current app is wired only to node:sqlite. Its /tmp copy is not durable
@@ -24,7 +25,7 @@ function requirePersistentDatabase(req, res, next) {
 
 function requireJwtSecret(req, res, next) {
   if (!persistentDatabaseAvailable()) return persistentStoreUnavailable(res);
-  if (!JWT_SECRET) {
+  if (!isJwtSecretConfigured) {
     return res.status(503).json({
       error: 'Account features are temporarily unavailable. The site administrator must configure JWT_SECRET.'
     });
@@ -47,7 +48,7 @@ function authMiddleware(req, res, next) {
 
   if (!JWT_SECRET) {
     return res.status(503).json({
-      error: 'Account features are temporarily unavailable until JWT_SECRET is configured.'
+      error: 'Account features are temporarily unavailable until a private JWT_SECRET of at least 32 bytes is configured.'
     });
   }
 
@@ -57,7 +58,7 @@ function authMiddleware(req, res, next) {
   }
 
   try {
-    req.user = jwt.verify(token, JWT_SECRET);
+    req.user = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
     next();
   } catch (err) {
     req.user = null;
@@ -96,6 +97,7 @@ function requireAdmin(req, res, next) {
 
 module.exports = {
   JWT_SECRET,
+  isJwtSecretConfigured,
   authMiddleware,
   requireAuth,
   requireAdmin,
