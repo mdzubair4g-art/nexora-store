@@ -39,6 +39,18 @@ router.post('/', requireAuth, (req, res) => {
     return res.status(400).json({ error: 'Add between 1 and 30 valid items to your order.' });
   }
 
+  const cleanIdempotencyKey = String(req.body.idempotencyKey || '').trim();
+  if (!/^[A-Za-z0-9_-]{16,100}$/.test(cleanIdempotencyKey)) {
+    return res.status(400).json({ error: 'A valid order request key is required. Please retry checkout.' });
+  }
+
+  const priorOrder = db.prepare(
+    'SELECT * FROM orders WHERE user_id = ? AND idempotency_key = ?'
+  ).get(Number(req.user.id), cleanIdempotencyKey);
+  if (priorOrder) {
+    return res.status(200).json(formatOrder(priorOrder));
+  }
+
   const cleanRecipientName = typeof recipientName === 'string' ? recipientName.trim() : '';
   if (!cleanRecipientName || cleanRecipientName.length > 80) {
     return res.status(400).json({ error: 'Enter a valid recipient name (up to 80 characters).' });
@@ -135,8 +147,8 @@ router.post('/', requireAuth, (req, res) => {
   const email = req.user.email.toLowerCase();
 
   const stmt = db.prepare(
-    "INSERT INTO orders (order_id, user_id, user_email, items_json, subtotal, discount, total_amount, payment_method, payment_status, payment_id, shipping_address, city, state, pincode, status, tracking_stage) " +
-    "VALUES (?, ?, ?, ?, ?, ?, ?, 'Cash on Delivery (COD)', 'PENDING_ON_DELIVERY', NULL, ?, ?, ?, ?, 'Confirmed', 'Confirmed')"
+    "INSERT INTO orders (order_id, user_id, idempotency_key, user_email, items_json, subtotal, discount, total_amount, payment_method, payment_status, payment_id, shipping_address, city, state, pincode, status, tracking_stage) " +
+    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Cash on Delivery (COD)', 'PENDING_ON_DELIVERY', NULL, ?, ?, ?, ?, 'Confirmed', 'Confirmed')"
   );
 
   let info;
@@ -158,6 +170,7 @@ router.post('/', requireAuth, (req, res) => {
     info = stmt.run(
       orderId,
       Number(req.user.id),
+      cleanIdempotencyKey,
       email,
       JSON.stringify(trustedItems),
       subtotal,
@@ -173,6 +186,12 @@ router.post('/', requireAuth, (req, res) => {
     db.exec('ROLLBACK');
     if (err.code === 'INSUFFICIENT_STOCK') {
       return res.status(409).json({ error: err.message + ' Please refresh your cart.' });
+    }
+    if (String(err.message || '').includes('orders.user_id, orders.idempotency_key')) {
+      const existingOrder = db.prepare(
+        'SELECT * FROM orders WHERE user_id = ? AND idempotency_key = ?'
+      ).get(Number(req.user.id), cleanIdempotencyKey);
+      if (existingOrder) return res.status(200).json(formatOrder(existingOrder));
     }
     throw err;
   }
