@@ -104,25 +104,42 @@ router.get('/:id', (req, res) => {
 
 // POST new product (Seller Studio)
 router.post('/', requireAdmin, (req, res) => {
-  const { title, brand, category, collection, price, mrp, image, highlights, variants } = req.body;
+  const { title, brand, category, collection, price, mrp, image, highlights, variants } = req.body || {};
+  const departments = [
+    'Mobiles & Tablets', 'Laptops & Audio', 'Fashion & Sneakers', 'Home & Kitchen',
+    'Beauty & Grooming', 'Fitness & Sports', 'Books & Desk', 'Gaming & Consoles'
+  ];
 
-  if (!title || !price || !category) {
-    logApiCall('POST', '/api/products', 400, 'Missing required fields');
-    return res.status(400).json({ error: 'Title, category, and price are required' });
+  if (typeof title !== 'string' || !title.trim() || title.trim().length > 160 || !departments.includes(category)) {
+    logApiCall('POST', '/api/products', 400, 'Invalid title or department');
+    return res.status(400).json({ error: 'Enter a product title and choose a valid department.' });
   }
 
   const offerPrice = Number(price);
-  const maxPrice = mrp ? Number(mrp) : offerPrice + Math.round(offerPrice * 0.25);
-  const brandName = brand ? brand.trim() : 'NEXORA Studio';
-  const defaultImg = image && image.trim() ? image.trim() : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
-  const highlightList = Array.isArray(highlights) ? highlights : (highlights ? [highlights] : ['Verified Marketplace Listing']);
-  const variantList = Array.isArray(variants) && variants.length > 0 ? variants : ['Standard Edition'];
+  const maxPrice = mrp === undefined || mrp === null || mrp === '' ? Math.round(offerPrice * 1.25) : Number(mrp);
+  if (!Number.isSafeInteger(offerPrice) || offerPrice < 1 || offerPrice > 10000000 ||
+      !Number.isSafeInteger(maxPrice) || maxPrice < offerPrice || maxPrice > 20000000) {
+    return res.status(400).json({ error: 'Enter a valid offer price and an MRP greater than or equal to it.' });
+  }
+
+  const brandName = typeof brand === 'string' && brand.trim() ? brand.trim().slice(0, 80) : 'NEXORA Studio';
+  const defaultImg = typeof image === 'string' && image.trim() ? image.trim() : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
+  if (defaultImg.length > 2048 || !/^https:\/\//i.test(defaultImg)) {
+    return res.status(400).json({ error: 'Product image must be a valid HTTPS URL.' });
+  }
+
+  const highlightList = Array.isArray(highlights)
+    ? highlights.filter(value => typeof value === 'string' && value.trim()).slice(0, 8).map(value => value.trim().slice(0, 180))
+    : (typeof highlights === 'string' && highlights.trim() ? [highlights.trim().slice(0, 180)] : ['Product details coming soon']);
+  const variantList = Array.isArray(variants) && variants.length > 0
+    ? variants.filter(value => typeof value === 'string' && value.trim()).slice(0, 20).map(value => value.trim().slice(0, 80))
+    : ['Standard Edition'];
 
   const stmt = db.prepare(`
     INSERT INTO products (
       title, brand, category, collection, price, mrp,
       rating, reviews_count, flash_deal, variants_json, image, highlights_json, stock
-    ) VALUES (?, ?, ?, ?, ?, ?, 4.9, 1, 1, ?, ?, ?, 25)
+    ) VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, ?, ?, ?, 25)
   `);
 
   const info = stmt.run(
