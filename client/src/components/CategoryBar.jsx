@@ -51,7 +51,7 @@ export function CategoryBar({
         onClick={onOpenSeller}
         className="ml-auto bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 px-3 py-0.5 rounded-full font-bold hover:bg-cyan-500/30 whitespace-nowrap transition"
       >
-        + Seller Studio
+        + Admin Seller Studio
       </button>
     </nav>
   );
