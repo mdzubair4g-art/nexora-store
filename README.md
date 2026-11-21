@@ -19,7 +19,7 @@ NEXORA is a responsive marketplace demo built with React, Vite, Tailwind CSS, Ex
 - Account registration and sign-in
 - Per-account wishlist and order history
 - Administrator-only product publishing and API statistics
-- Indian PIN-code lookup via the India Post postal API, with a small verified fallback directory
+- India Post PIN-code lookup for postal-area verification only; courier coverage and delivery estimates are not claimed
 - Cash on Delivery checkout
 
 ## Security notes
@@ -28,7 +28,7 @@ NEXORA is a responsive marketplace demo built with React, Vite, Tailwind CSS, Ex
 - Order item prices and coupon discounts are recalculated on the server.
 - Product publishing and internal statistics require an administrator account.
 - Online payment endpoints are intentionally disabled. The previous mock verification flow did not process a real payment, so checkout now supports Cash on Delivery only.
-- Production requires a private JWT_SECRET. Vercel deployments remove the public local demo accounts.
+- Production requires a private JWT_SECRET and a durable database adapter. On Vercel, account, wishlist, review, seller, and order operations stay disabled until persistent storage is actually connected; a secret alone does not enable them. Vercel deployments remove the public local demo accounts.
 - Never commit .env files or production credentials.
 
 ## Local setup
