@@ -60,13 +60,19 @@ export function ProductCard({ product, onOpenDetail }) {
           {product.title}
         </h3>
 
-        <div className="flex items-center gap-1.5 text-xs mt-1.5">
-          <span className="bg-emerald-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1">
-            <span>★</span> {product.rating}
-          </span>
-          <span className="text-slate-400 text-[11px]">
-            ({product.reviewsCount?.toLocaleString('en-IN')})
-          </span>
+        <div className="flex items-center gap-1.5 text-xs mt-1.5 min-h-4">
+          {Number(product.reviewsCount) > 0 ? (
+            <>
+              <span className="bg-emerald-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1">
+                <span>★</span> {Number(product.rating).toFixed(1)}
+              </span>
+              <span className="text-slate-400 text-[11px]">
+                {Number(product.reviewsCount).toLocaleString('en-IN')} ratings
+              </span>
+            </>
+          ) : (
+            <span className="text-slate-400 text-[11px]">No ratings yet</span>
+          )}
         </div>
 
         <div className="mt-2.5 flex items-baseline gap-1.5">
