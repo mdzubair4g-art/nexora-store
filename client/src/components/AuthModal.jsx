@@ -89,8 +89,8 @@ export function AuthModal({ isOpen, onClose }) {
 
             <p className="text-xs text-slate-500 mb-4">
               {mode === 'login'
-                ? 'Sign in to access your saved wishlist and track live orders.'
-                : 'Create an account to unlock exclusive member discounts and instant express checkout.'}
+                ? 'Sign in to access your saved wishlist and order history.'
+                : 'Create an account to save products and place Cash on Delivery orders.'}
             </p>
 
             {error && (
@@ -108,7 +108,7 @@ export function AuthModal({ isOpen, onClose }) {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Alex Mercer"
+                    placeholder="Your full name"
                     className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-cyan-500"
                   />
                 </div>
@@ -121,7 +121,7 @@ export function AuthModal({ isOpen, onClose }) {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="alex@nexora.in"
+                  placeholder="you@example.com"
                   className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-cyan-500"
                 />
               </div>
@@ -147,9 +147,11 @@ export function AuthModal({ isOpen, onClose }) {
               </button>
             </form>
 
-            <div className="mt-4 pt-3 border-t text-[11px] text-slate-400 text-center">
-              Demo login: <strong>alex@nexora.in</strong> / <strong>nexora123</strong>
-            </div>
+            {import.meta.env.DEV && (
+              <div className="mt-4 pt-3 border-t text-[11px] text-slate-400 text-center">
+                Local demo: <strong>alex@nexora.in</strong> / <strong>nexora123</strong>
+              </div>
+            )}
           </>
         )}
       </div>
