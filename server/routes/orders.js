@@ -30,19 +30,44 @@ function formatOrder(o) {
 // Create an authenticated Cash on Delivery order.
 // Product prices and coupon discounts are recalculated on the server.
 router.post('/', requireAuth, (req, res) => {
-  const { items, couponCode, shippingAddress, city, state, pincode } = req.body || {};
+  const {
+    items, couponCode, recipientName, recipientPhone,
+    addressLine, city, state, pincode
+  } = req.body || {};
 
   if (!Array.isArray(items) || items.length === 0 || items.length > 30) {
     return res.status(400).json({ error: 'Add between 1 and 30 valid items to your order.' });
   }
 
-  if (typeof shippingAddress !== 'string' || !shippingAddress.trim() || shippingAddress.length > 500) {
-    return res.status(400).json({ error: 'A valid delivery address is required.' });
+  const cleanRecipientName = typeof recipientName === 'string' ? recipientName.trim() : '';
+  if (!cleanRecipientName || cleanRecipientName.length > 80) {
+    return res.status(400).json({ error: 'Enter a valid recipient name (up to 80 characters).' });
+  }
+
+  const cleanPhone = String(recipientPhone || '').trim();
+  if (!/^[6-9][0-9]{9}$/.test(cleanPhone)) {
+    return res.status(400).json({ error: 'Enter a valid 10-digit Indian mobile number.' });
+  }
+
+  const cleanAddressLine = typeof addressLine === 'string' ? addressLine.trim() : '';
+  if (cleanAddressLine.length < 5 || cleanAddressLine.length > 350) {
+    return res.status(400).json({ error: 'Enter a delivery address between 5 and 350 characters.' });
   }
 
   const cleanPincode = String(pincode || '').trim();
-  if (!/^\d{6}$/.test(cleanPincode)) {
+  if (!/^[0-9]{6}$/.test(cleanPincode)) {
     return res.status(400).json({ error: 'Enter a valid 6-digit Indian PIN code.' });
+  }
+
+  const cleanCity = typeof city === 'string' ? city.trim().slice(0, 100) : '';
+  const cleanState = typeof state === 'string' ? state.trim().slice(0, 100) : '';
+  if (!cleanCity || !cleanState) {
+    return res.status(400).json({ error: 'Verify your PIN code before placing the order.' });
+  }
+
+  const shippingAddress = `${cleanRecipientName} (${cleanPhone}), ${cleanAddressLine}, ${cleanCity}, ${cleanState} - ${cleanPincode}`;
+  if (shippingAddress.length > 500) {
+    return res.status(400).json({ error: 'Delivery address is too long.' });
   }
 
   const trustedItems = [];
@@ -106,7 +131,7 @@ router.post('/', requireAuth, (req, res) => {
   }
 
   const total = Math.max(0, subtotal - discount);
-  const orderId = 'NX-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+  const orderId = 'NX-' + crypto.randomBytes(8).toString('hex').toUpperCase();
   const email = req.user.email.toLowerCase();
 
   const stmt = db.prepare(
@@ -139,8 +164,8 @@ router.post('/', requireAuth, (req, res) => {
       discount,
       total,
       shippingAddress.trim(),
-      String(city || '').slice(0, 100),
-      String(state || '').slice(0, 100),
+      cleanCity,
+      cleanState,
       cleanPincode
     );
     db.exec('COMMIT');
