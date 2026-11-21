@@ -15,6 +15,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   const [recipientName, setRecipientName] = useState(user?.name || '');
   const [recipientPhone, setRecipientPhone] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [idempotencyKey, setIdempotencyKey] = useState(() => createIdempotencyKey());
 
   const handlePincodeLookup = async (code) => {
     if (!/^\d{6}$/.test(code)) return;
@@ -74,6 +75,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
       const order = await api.placeOrder({
         items: cart,
         couponCode: coupon || '',
+        idempotencyKey,
         recipientName: recipientName.trim(),
         recipientPhone: recipientPhone.trim(),
         addressLine: addressLine.trim(),
@@ -83,6 +85,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
       });
 
       clearCart();
+      setIdempotencyKey(createIdempotencyKey());
       onClose();
       onOrderPlaced(order);
     } catch (err) {
@@ -251,4 +254,11 @@ function cityLabel(info) {
   const city = info.city || info.district || '';
   const state = info.state || '';
   return [city, state].filter(Boolean).join(', ');
+}
+
+function createIdempotencyKey() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `nx-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
