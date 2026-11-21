@@ -232,6 +232,7 @@ export function App() {
           <ProductCatalog
             catalogTitle={catalogTitle}
             products={products}
+            loading={loading}
             priceFilter={priceFilter}
             onChangePriceFilter={setPriceFilter}
             sortSelect={sortSelect}
