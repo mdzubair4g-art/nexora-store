@@ -54,6 +54,13 @@ export const api = {
   },
 
   // Auth
+  async getCurrentUser() {
+    const res = await fetch(`${API_BASE}/auth/me`, { headers: getAuthHeader() });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Session is invalid');
+    return data;
+  },
+
   async login(email, password) {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
@@ -77,17 +84,17 @@ export const api = {
   },
 
   // Wishlist
-  async getWishlist(email) {
-    const res = await fetch(`${API_BASE}/wishlist?email=${encodeURIComponent(email || '')}`);
+  async getWishlist() {
+    const res = await fetch(`${API_BASE}/wishlist`, { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to load wishlist');
     return res.json();
   },
 
-  async toggleWishlist(email, productId) {
+  async toggleWishlist(productId) {
     const res = await fetch(`${API_BASE}/wishlist/toggle`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, productId })
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ productId })
     });
     if (!res.ok) throw new Error('Failed to update wishlist');
     return res.json();
@@ -150,8 +157,8 @@ export const api = {
     return data;
   },
 
-  async getOrders(email) {
-    const res = await fetch(`${API_BASE}/orders?email=${encodeURIComponent(email || '')}`, {
+  async getOrders() {
+    const res = await fetch(`${API_BASE}/orders`, {
       headers: getAuthHeader()
     });
     if (!res.ok) throw new Error('Failed to fetch orders');
@@ -160,7 +167,7 @@ export const api = {
 
   // Server Inspector Stats
   async getStats() {
-    const res = await fetch(`${API_BASE}/stats`);
+    const res = await fetch(`${API_BASE}/stats`, { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to fetch stats');
     return res.json();
   }
