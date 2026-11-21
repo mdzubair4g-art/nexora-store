@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
 export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
-  const { cart, finalTotal, subtotal, couponDiscount, coupon, clearCart } = useCart();
+  const { cart, finalTotal, coupon, clearCart } = useCart();
   const { user } = useAuth();
 
   const [pincode, setPincode] = useState('');
