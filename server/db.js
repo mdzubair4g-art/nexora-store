@@ -1,23 +1,10 @@
 const path = require('node:path');
-const fs = require('node:fs');
 
 // In serverless environments (Vercel / AWS Lambda), the deployment bundle is read-only.
 // Writable storage is in /tmp.
 const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 const dbDir = isServerless ? '/tmp' : __dirname;
 const dbPath = path.join(dbDir, 'nexora.db');
-
-// If on serverless and db doesn't exist in /tmp yet, copy seed database if present
-if (isServerless && !fs.existsSync(dbPath)) {
-  const sourceDb = path.join(__dirname, 'nexora.db');
-  if (fs.existsSync(sourceDb)) {
-    try {
-      fs.copyFileSync(sourceDb, dbPath);
-    } catch (e) {
-      console.warn('Could not copy seed db to /tmp, will initialize fresh:', e);
-    }
-  }
-}
 
 let DatabaseSync;
 try {
@@ -51,7 +38,7 @@ if (DatabaseSync) {
       collection TEXT NOT NULL,
       price INTEGER NOT NULL,
       mrp INTEGER NOT NULL,
-      rating REAL DEFAULT 4.5,
+      rating REAL DEFAULT 0,
       reviews_count INTEGER DEFAULT 0,
       flash_deal INTEGER DEFAULT 0,
       variants_json TEXT DEFAULT '["Standard"]',
@@ -88,7 +75,7 @@ if (DatabaseSync) {
       state TEXT,
       pincode TEXT,
       status TEXT DEFAULT 'Confirmed',
-      tracking_stage TEXT DEFAULT 'Packed',
+      tracking_stage TEXT DEFAULT 'Confirmed',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
