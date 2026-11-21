@@ -25,6 +25,7 @@ export function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const [commerceReady, setCommerceReady] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCollection, setSelectedCollection] = useState(null);
@@ -64,6 +65,14 @@ export function App() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let active = true;
+    api.getHealth()
+      .then(health => { if (active) setCommerceReady(health.commerceReady === true); })
+      .catch(() => { if (active) setCommerceReady(false); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     fetchProducts();
@@ -114,6 +123,10 @@ export function App() {
   };
 
   const handleBuyNow = (product, variant) => {
+    if (!commerceReady) {
+      alert('Ordering is paused while the store owner verifies the real product catalogue, prices and inventory.');
+      return;
+    }
     if (!user) {
       setIsAuthModalOpen(true);
       return;
@@ -144,6 +157,10 @@ export function App() {
   };
 
   const proceedToCheckout = () => {
+    if (!commerceReady) {
+      alert('Ordering is paused while the store owner verifies the real product catalogue, prices and inventory.');
+      return;
+    }
     if (!user) {
       setIsAuthModalOpen(true);
       return;
@@ -192,6 +209,13 @@ export function App() {
         onSelectFlashDeals={handleSelectFlashDeals}
         onOpenSeller={openSeller}
       />
+
+      {!commerceReady && (
+        <div role="status" className="mx-auto my-3 w-[min(1440px,calc(100%-24px))] rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-950 shadow-sm">
+          <strong className="block text-sm mb-1">NEXORA demo catalogue — ordering paused</strong>
+          Product names, images, prices, stock and coupon offers are sample data and have not been verified by the store owner. Browse the catalogue, but do not place or rely on a real order yet.
+        </div>
+      )}
 
       {activeProductDetail ? (
         <ProductDetailModal
@@ -256,9 +280,10 @@ export function App() {
         </div>
       </footer>
 
-      <CartDrawer onProceedToCheckout={proceedToCheckout} />
+      <CartDrawer onProceedToCheckout={proceedToCheckout} commerceReady={commerceReady} />
 
       <CheckoutModal
+        commerceReady={commerceReady}
         isOpen={isCheckoutModalOpen}
         onClose={() => setIsCheckoutModalOpen(false)}
         onOrderPlaced={handleOrderPlaced}

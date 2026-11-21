@@ -3,7 +3,7 @@ import { api } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
-export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
+export function CheckoutModal({ isOpen, onClose, onOrderPlaced, commerceReady = false }) {
   const { cart, finalTotal, coupon, clearCart } = useCart();
   const { user } = useAuth();
 
@@ -54,6 +54,10 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   const handleConfirmOrder = async (event) => {
     event.preventDefault();
 
+    if (!commerceReady) {
+      alert('Ordering is paused until the store owner verifies the real catalogue and inventory.');
+      return;
+    }
     if (!user) {
       alert('Please sign in before placing an order.');
       return;
@@ -120,7 +124,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         </div>
 
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 mb-4 text-xs text-amber-900">
-          <strong>Cash on Delivery only.</strong> Online payments are disabled until a real payment gateway is connected and verified.
+          <strong>Cash on Delivery is the only coded payment option.</strong> Online payments are disabled. Courier coverage, COD serviceability, delivery fees and delivery dates are not verified because no shipping partner is connected.
         </div>
 
         <form onSubmit={handleConfirmOrder} className="space-y-4 text-sm">
@@ -215,7 +219,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                   <p className="text-[11px] text-slate-600">Pay when your order arrives.</p>
                 </div>
               </div>
-              <span className="text-[10px] uppercase font-black tracking-wide bg-white text-cyan-800 rounded-full px-2.5 py-1">Available</span>
+              <span className="text-[10px] uppercase font-black tracking-wide bg-white text-cyan-800 rounded-full px-2.5 py-1">COD option</span>
             </div>
           </section>
 
@@ -229,7 +233,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
 
           <button
             type="submit"
-            disabled={isProcessing || loadingPincode || !user}
+            disabled={isProcessing || loadingPincode || !user || !commerceReady}
             className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-bold text-sm shadow flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isProcessing ? (
@@ -242,7 +246,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
             )}
           </button>
           <p className="text-[10px] text-center text-slate-500">
-            Your order amount is recalculated from the product catalogue on the server.
+            The server recalculates product prices and coupons. Orders stay disabled until the owner verifies the catalogue and enables CATALOGUE_LIVE.
           </p>
         </form>
       </div>

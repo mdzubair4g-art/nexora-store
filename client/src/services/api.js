@@ -6,6 +6,12 @@ function getAuthHeader() {
 }
 
 export const api = {
+  async getHealth() {
+    const res = await fetch(`${API_BASE}/health`, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error('Unable to check store readiness');
+    return res.json();
+  },
+
   // Products
   async getProducts(params = {}) {
     const qs = new URLSearchParams();

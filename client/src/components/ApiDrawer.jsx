@@ -52,7 +52,7 @@ export function ApiDrawer({ isOpen, onClose }) {
       </div>
 
       <div className="p-3.5 space-y-3 text-[11px]">
-        {/* Real SQLite Stats Grid */}
+        {/* Live database stats grid */}
         <div className="grid grid-cols-4 gap-2 text-center">
           <div className="bg-slate-900/90 p-2 rounded-xl border border-slate-800">
             <div className="text-slate-400 text-[10px]">Products</div>

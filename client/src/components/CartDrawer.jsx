@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 
-export function CartDrawer({ onProceedToCheckout }) {
+export function CartDrawer({ onProceedToCheckout, commerceReady = false }) {
   const {
     cart,
     isCartOpen,
@@ -101,8 +101,8 @@ export function CartDrawer({ onProceedToCheckout }) {
         {/* Checkout & Promo Panel */}
         {cart.length > 0 && (
           <div className="p-4 border-t bg-slate-50 space-y-3">
-            {/* Promo Code Input */}
-            <div className="flex gap-2">
+            {/* Promotions are hidden until the owner verifies the catalogue. */}
+            {commerceReady && <div className="flex gap-2">
               <input
                 type="text"
                 value={inputCode}
@@ -117,9 +117,9 @@ export function CartDrawer({ onProceedToCheckout }) {
               >
                 {loadingCoupon ? 'Checking...' : 'Apply'}
               </button>
-            </div>
+            </div>}
 
-            {couponMessage && (
+            {commerceReady && couponMessage && (
               <div className={`text-[11px] font-bold ${coupon ? 'text-emerald-700' : 'text-rose-600'}`}>
                 {couponMessage}
               </div>
@@ -128,7 +128,7 @@ export function CartDrawer({ onProceedToCheckout }) {
             {/* Calculations */}
             <div className="space-y-1 text-xs">
               <div className="flex justify-between text-slate-600">
-                <span>Subtotal:</span>
+                <span>{commerceReady ? 'Subtotal:' : 'Sample subtotal:'}</span>
                 <span>₹{subtotal.toLocaleString('en-IN')}</span>
               </div>
 
@@ -140,7 +140,7 @@ export function CartDrawer({ onProceedToCheckout }) {
               )}
 
               <div className="flex justify-between font-black text-base text-slate-900 pt-1 border-t">
-                <span>Total Payable:</span>
+                <span>{commerceReady ? 'Total Payable:' : 'Sample total (not payable):'}</span>
                 <span className="text-orange-600">₹{finalTotal.toLocaleString('en-IN')}</span>
               </div>
             </div>
@@ -150,9 +150,10 @@ export function CartDrawer({ onProceedToCheckout }) {
                 setIsCartOpen(false);
                 onProceedToCheckout();
               }}
-              className="w-full btn-primary py-2.5 rounded-xl font-bold text-sm shadow"
+              disabled={!commerceReady}
+              className="w-full btn-primary py-2.5 rounded-xl font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Proceed to Checkout
+              {commerceReady ? 'Proceed to Checkout' : 'Ordering paused'}
             </button>
           </div>
         )}
