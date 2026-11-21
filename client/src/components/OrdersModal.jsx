@@ -67,22 +67,13 @@ export function OrdersModal({ isOpen, onClose }) {
                 </div>
 
                 <div className="p-4 space-y-3">
-                  {/* Tracking Stages Timeline */}
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-slate-500">
-                      <span className={['Confirmed', 'Packed', 'In Transit', 'Delivered'].includes(o.trackingStage) ? 'text-emerald-700' : 'text-slate-400'}>
-                        <i className="fa-solid fa-circle-check mr-1"></i>Confirmed
-                      </span>
-                      <span className={['Packed', 'In Transit', 'Delivered'].includes(o.trackingStage) ? 'text-emerald-700' : 'text-slate-400'}>
-                        <i className="fa-solid fa-box mr-1"></i>Packed
-                      </span>
-                      <span className={['In Transit', 'Delivered'].includes(o.trackingStage) ? 'text-cyan-700' : 'text-slate-400'}>
-                        <i className="fa-solid fa-truck mr-1"></i>In Transit
-                      </span>
-                      <span className={o.trackingStage === 'Delivered' ? 'text-emerald-700' : 'text-slate-400'}>
-                        <i className="fa-solid fa-house-circle-check mr-1"></i>Delivered
-                      </span>
-                    </div>
+                  <div className="bg-cyan-50 border border-cyan-100 p-3 rounded-xl flex flex-wrap items-center gap-2">
+                    <span className="inline-flex rounded-full bg-white text-cyan-800 border border-cyan-200 px-2.5 py-1 font-bold">
+                      {o.status || 'Confirmed'}
+                    </span>
+                    <span className="text-[11px] text-slate-600">
+                      Order received. Shipment tracking will appear after a delivery partner is connected.
+                    </span>
                   </div>
 
                   <div className="text-slate-600 text-[11px]">
