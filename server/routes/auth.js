@@ -16,7 +16,7 @@ router.post('/register', (req, res) => {
 
   const cleanEmail = email.trim().toLowerCase();
   const cleanName = typeof name === 'string' ? name.trim() : '';
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(cleanEmail) || cleanEmail.length > 254) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || cleanEmail.length > 254) {
     return res.status(400).json({ error: 'Enter a valid email address.' });
   }
   if (password.length < 8 || password.length > 128) {
@@ -54,7 +54,7 @@ router.post('/login', (req, res) => {
   }
 
   const cleanEmail = email.trim().toLowerCase();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(cleanEmail) || cleanEmail.length > 254) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || cleanEmail.length > 254) {
     return res.status(400).json({ error: 'Enter a valid email address.' });
   }
   const userRecord = db.prepare('SELECT * FROM users WHERE email = ?').get(cleanEmail);
