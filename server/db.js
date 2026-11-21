@@ -124,6 +124,8 @@ if (DatabaseSync) {
     const countCheck = db.prepare('SELECT count(*) as count FROM products').get();
     if (!countCheck || countCheck.count === 0) {
       console.log('Database empty, auto-seeding products...');
+      // Export the initialized connection before seed.js imports this module.
+      module.exports = { db, logApiCall };
       const { seed } = require('./seed');
       seed();
     }
