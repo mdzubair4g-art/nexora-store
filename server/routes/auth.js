@@ -2,12 +2,12 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { db, logApiCall } = require('../db');
-const { JWT_SECRET, requireAuth } = require('../middleware/auth');
+const { JWT_SECRET, requireAuth, requireJwtSecret } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Register new user
-router.post('/register', (req, res) => {
+router.post('/register', requireJwtSecret, (req, res) => {
   const { name, email, password } = req.body;
   if (typeof email !== 'string' || typeof password !== 'string') {
     logApiCall('POST', '/api/auth/register', 400, 'Missing email/password');
@@ -46,7 +46,7 @@ router.post('/register', (req, res) => {
 });
 
 // Login
-router.post('/login', (req, res) => {
+router.post('/login', requireJwtSecret, (req, res) => {
   const { email, password } = req.body;
   if (typeof email !== 'string' || typeof password !== 'string' || password.length > 128) {
     logApiCall('POST', '/api/auth/login', 400, 'Missing credentials');
