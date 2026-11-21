@@ -207,7 +207,7 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow,
               />
 
               <button
-                type="button"
+                type={user ? 'submit' : 'button'}
                 onClick={!user ? onOpenAuth : undefined}
                 disabled={isSubmitting && Boolean(user)}
                 className="btn-primary px-5 py-2 rounded-xl font-bold disabled:opacity-50"
