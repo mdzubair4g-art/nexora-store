@@ -86,12 +86,18 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow,
             </h1>
 
             <div className="flex items-center gap-2 text-xs border-b border-slate-100 pb-3">
-              <span className="bg-emerald-600 text-white font-bold px-2 py-0.5 rounded flex items-center gap-1">
-                <span>★</span> {product.rating}
-              </span>
-              <span className="text-slate-500">
-                {product.reviewsCount?.toLocaleString('en-IN')} verified ratings
-              </span>
+              {Number(product.reviewsCount) > 0 ? (
+                <>
+                  <span className="bg-emerald-600 text-white font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                    <span>★</span> {Number(product.rating).toFixed(1)}
+                  </span>
+                  <span className="text-slate-500">
+                    {Number(product.reviewsCount).toLocaleString('en-IN')} customer ratings
+                  </span>
+                </>
+              ) : (
+                <span className="text-slate-500">No ratings yet</span>
+              )}
             </div>
 
             <div>
@@ -202,7 +208,7 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow,
                 onChange={(e) => setRevComment(e.target.value)}
                 required
                 rows={3}
-                placeholder="Share your verified experience..."
+                placeholder="Share your experience with this product..."
                 className="w-full border rounded-xl p-3 outline-none focus:ring-1 focus:ring-cyan-500"
               />
 
