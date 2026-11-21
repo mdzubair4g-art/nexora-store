@@ -16,9 +16,11 @@ import { OrdersModal } from './components/OrdersModal';
 import { SellerModal } from './components/SellerModal';
 import { ApiDrawer } from './components/ApiDrawer';
 import { useCart } from './context/CartContext';
+import { useAuth } from './context/AuthContext';
 
 export function App() {
   const { addToCart } = useCart();
+  const { user } = useAuth();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -114,8 +116,52 @@ export function App() {
   };
 
   const handleBuyNow = (product, variant) => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     addToCart(product, variant, 1);
     setIsCheckoutModalOpen(true);
+  };
+
+  const openOrders = () => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    setIsOrdersModalOpen(true);
+  };
+
+  const openSeller = () => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    if (user.role !== 'admin') {
+      alert('Seller Studio is available to administrators only.');
+      return;
+    }
+    setIsSellerModalOpen(true);
+  };
+
+  const proceedToCheckout = () => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    setIsCheckoutModalOpen(true);
+  };
+
+  const toggleServerDrawer = () => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    if (user.role !== 'admin') {
+      alert('The API inspector is available to administrators only.');
+      return;
+    }
+    setIsServerDrawerOpen(prev => !prev);
   };
 
   const handleOrderPlaced = (order) => {
@@ -137,9 +183,9 @@ export function App() {
         deliveryLocation={deliveryLocation}
         onChangeLocation={handleChangeLocation}
         onOpenAuth={() => setIsAuthModalOpen(true)}
-        onOpenOrders={() => setIsOrdersModalOpen(true)}
-        onOpenSeller={() => setIsSellerModalOpen(true)}
-        onToggleServerDrawer={() => setIsServerDrawerOpen(prev => !prev)}
+        onOpenOrders={openOrders}
+        onOpenSeller={openSeller}
+        onToggleServerDrawer={toggleServerDrawer}
       />
 
       {/* Subcategory Bar */}
@@ -147,7 +193,7 @@ export function App() {
         selectedCategory={selectedCategory}
         onSelectCategory={handleSelectCategory}
         onSelectFlashDeals={handleSelectFlashDeals}
-        onOpenSeller={() => setIsSellerModalOpen(true)}
+        onOpenSeller={openSeller}
       />
 
       {/* Main Content: Either Product Detail or Home Storefront */}
@@ -215,7 +261,7 @@ export function App() {
 
       {/* Slide-out & Modal Components */}
       <CartDrawer
-        onProceedToCheckout={() => setIsCheckoutModalOpen(true)}
+        onProceedToCheckout={proceedToCheckout}
       />
 
       <CheckoutModal
