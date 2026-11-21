@@ -87,9 +87,10 @@ export function ProductCard({ product, onOpenDetail }) {
       {/* Add to Bag Button */}
       <button
         onClick={() => addToCart(product)}
-        className="mt-3.5 w-full btn-primary py-2 rounded-xl text-xs font-bold shadow-sm"
+        disabled={Number(product.stock) <= 0}
+        className="mt-3.5 w-full btn-primary py-2 rounded-xl text-xs font-bold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Add to Bag
+        {Number(product.stock) > 0 ? 'Add to Bag' : 'Out of Stock'}
       </button>
     </div>
   );
