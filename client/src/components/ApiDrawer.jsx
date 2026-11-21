@@ -32,7 +32,7 @@ export function ApiDrawer({ isOpen, onClose }) {
       <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs">
         <div className="flex items-center gap-2 font-bold text-cyan-400">
           <i className="fa-solid fa-server"></i>
-          <span>NEXORA REST API & SQLite Engine Inspector</span>
+          <span>NEXORA Admin API & Database Inspector</span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -82,10 +82,10 @@ export function ApiDrawer({ isOpen, onClose }) {
 
         {/* Live REST API Stream */}
         <div className="flex justify-between items-center text-slate-400 font-bold text-[10px] uppercase tracking-wider">
-          <span>Live SQLite REST API Traffic:</span>
+          <span>Recent API activity:</span>
           <span className="text-emerald-400 flex items-center gap-1 font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            PORT :5000 ACTIVE
+            ADMIN VIEW
           </span>
         </div>
 
