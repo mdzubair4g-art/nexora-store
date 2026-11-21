@@ -189,7 +189,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
             {shippingInfo && (
               <p className="text-xs text-emerald-700">
                 <i className="fa-solid fa-circle-check mr-1"></i>
-                PIN code lookup completed. Delivery estimate: {shippingInfo.deliveryDate || 'To be confirmed'}.
+                PIN code validated. Exact delivery date will be confirmed after dispatch.
               </p>
             )}
 
