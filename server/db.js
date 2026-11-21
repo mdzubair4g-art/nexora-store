@@ -145,7 +145,7 @@ if (DatabaseSync) {
     }
 
     if (configuredAdminEmail || configuredAdminPassword) {
-      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(configuredAdminEmail) || configuredAdminPassword.length < 16) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(configuredAdminEmail) || configuredAdminPassword.length < 16) {
         throw new Error('Set a valid ADMIN_EMAIL and an ADMIN_PASSWORD of at least 16 characters.');
       }
 
