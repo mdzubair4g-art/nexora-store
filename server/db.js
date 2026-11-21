@@ -64,6 +64,7 @@ if (DatabaseSync) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       order_id TEXT UNIQUE NOT NULL,
       user_id INTEGER,
+      idempotency_key TEXT,
       user_email TEXT NOT NULL,
       items_json TEXT NOT NULL,
       subtotal INTEGER NOT NULL,
@@ -114,6 +115,13 @@ if (DatabaseSync) {
     db.exec('ALTER TABLE reviews ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE SET NULL');
   }
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_product_user ON reviews(product_id, user_id) WHERE user_id IS NOT NULL');
+
+  // Upgrade existing local databases for retry-safe order submission.
+  const orderColumns = db.prepare('PRAGMA table_info(orders)').all().map(column => column.name);
+  if (!orderColumns.includes('idempotency_key')) {
+    db.exec('ALTER TABLE orders ADD COLUMN idempotency_key TEXT');
+  }
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_user_idempotency ON orders(user_id, idempotency_key) WHERE idempotency_key IS NOT NULL');
 
   // Auto-seed if products table is empty (e.g. fresh cold start on Vercel)
   try {
