@@ -53,8 +53,8 @@ export function CartProvider({ children }) {
   const updateQty = (index, delta) => {
     setCart(prev => {
       const copy = [...prev];
-      copy[index].qty += delta;
-      if (copy[index].qty <= 0) {
+      copy[index].qty = Math.min(20, Math.max(0, copy[index].qty + delta));
+      if (copy[index].qty === 0) {
         copy.splice(index, 1);
       }
       return copy;
