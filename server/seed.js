@@ -375,16 +375,18 @@ function seed() {
     DELETE FROM users;
   `);
 
-  // Seed Admin & Demo Users
-  const salt = bcrypt.genSaltSync(10);
-  const passwordHash = bcrypt.hashSync('nexora123', salt);
+  // Predictable sample users are only created for local development.
+  if (!process.env.VERCEL) {
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync('nexora123', salt);
 
-  const insertUser = db.prepare(`
-    INSERT INTO users (name, email, password_hash, role)
-    VALUES (?, ?, ?, ?)
-  `);
-  insertUser.run("Alex Mercer", "alex@nexora.in", passwordHash, "shopper");
-  insertUser.run("NEXORA Admin", "admin@nexora.in", passwordHash, "admin");
+    const insertUser = db.prepare(`
+      INSERT INTO users (name, email, password_hash, role)
+      VALUES (?, ?, ?, ?)
+    `);
+    insertUser.run("Alex Mercer", "alex@nexora.in", passwordHash, "shopper");
+    insertUser.run("NEXORA Admin", "admin@nexora.in", passwordHash, "admin");
+  }
 
   // Seed Coupons
   const insertCoupon = db.prepare(`
@@ -433,12 +435,14 @@ function seed() {
     }
   }
 
-  // Pre-seed some default wishlist items for alex@nexora.in
-  const insertWish = db.prepare(`
-    INSERT INTO wishlist (user_email, product_id) VALUES (?, ?)
-  `);
-  insertWish.run("alex@nexora.in", 1);
-  insertWish.run("alex@nexora.in", 7);
+  // Local demo wishlist only; production wishlists belong to registered users.
+  if (!process.env.VERCEL) {
+    const insertWish = db.prepare(`
+      INSERT INTO wishlist (user_email, product_id) VALUES (?, ?)
+    `);
+    insertWish.run("alex@nexora.in", 1);
+    insertWish.run("alex@nexora.in", 7);
+  }
 
   console.log(`Seeding complete: ${SEED_PRODUCTS.length} products, demo coupons, and demo accounts created.`);
 }
