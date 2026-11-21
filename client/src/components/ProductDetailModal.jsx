@@ -3,7 +3,7 @@ import { api } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
-export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow }) {
+export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow, onOpenAuth }) {
   const { addToCart } = useCart();
   const { user } = useAuth();
 
@@ -207,8 +207,9 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
               />
 
               <button
-                type="submit"
-                disabled={isSubmitting || !user}
+                type="button"
+                onClick={!user ? onOpenAuth : undefined}
+                disabled={isSubmitting && Boolean(user)}
                 className="btn-primary px-5 py-2 rounded-xl font-bold disabled:opacity-50"
               >
                 {!user ? 'Sign in to review' : (isSubmitting ? 'Posting...' : 'Post Review')}
