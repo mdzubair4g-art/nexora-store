@@ -1,11 +1,10 @@
-const test = require('node:test');
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 
 const app = require('../server');
 const { databaseReady, query, transaction, close, isPostgres } = require('../db');
 
-test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and disabled online payments', { timeout: 120000 }, async () => {
+async function main() {
   assert.equal(isPostgres, true, 'CI integration tests must run against PostgreSQL');
   console.log('[integration] waiting for PostgreSQL schema and seed');
   await databaseReady;
@@ -220,4 +219,11 @@ test('PostgreSQL API integration: accounts, COD orders, stock, ownership, and di
       await close();
     }
   }
+}
+
+main().then(() => {
+  console.log('[integration] PostgreSQL API integration checks passed');
+}).catch(error => {
+  console.error('[integration] PostgreSQL API integration checks failed:', error);
+  process.exitCode = 1;
 });

@@ -12,6 +12,7 @@ permissions:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     services:
       postgres:
         image: postgres:16
@@ -50,8 +51,12 @@ jobs:
         run: |
           find server api -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
-      - name: Run unit and PostgreSQL API integration tests
+      - name: Run unit tests
         run: npm test
+
+      - name: Run PostgreSQL API integration tests
+        timeout-minutes: 4
+        run: node server/tests/integration.js
 
       - name: Build frontend
         run: npm run build
