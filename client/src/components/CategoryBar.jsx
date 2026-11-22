@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const CATEGORIES = [
   'Mobiles & Tablets',
@@ -17,6 +18,7 @@ export function CategoryBar({
   onSelectFlashDeals,
   onOpenSeller
 }) {
+  const { user } = useAuth();
   return (
     <nav className="sub-bar text-slate-200 text-xs px-4 md:px-6 py-2 flex items-center gap-4 overflow-x-auto no-scrollbar border-t border-white/5">
       <button
@@ -47,12 +49,12 @@ export function CategoryBar({
         </button>
       ))}
 
-      <button
+      {user?.role === 'admin' && <button
         onClick={onOpenSeller}
         className="ml-auto bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 px-3 py-0.5 rounded-full font-bold hover:bg-cyan-500/30 whitespace-nowrap transition"
       >
         + Seller Studio
-      </button>
+      </button>}
     </nav>
   );
 }
