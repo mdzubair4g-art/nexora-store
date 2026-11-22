@@ -1,6 +1,8 @@
-# NEXORA.in — Full-Stack E-Commerce Marketplace Platform
+# NEXORA.in — Full-Stack Marketplace Portfolio Demo
 
-A modern, production-grade e-commerce application ported from a single-file prototype into a decoupled, modular full-stack architecture with **React 18 + Vite + Tailwind CSS**, **Node.js Express REST API**, **native SQLite database**, and **Payment & PIN Code Shipping Integrations**.
+NEXORA is a portfolio project built with **React 18 + Vite + Tailwind CSS**, a **Node.js + Express REST API**, and a **SQLite database**. It demonstrates catalogue browsing, search and filters, JWT-based accounts, cart and wishlist flows, sample order records, and a simulated checkout.
+
+> **Demo limitations:** product listings, prices, ratings, stock and promotions are sample data. UPI/card payments are simulations only; no money is charged. PIN lookup identifies a postal area but does not verify courier coverage, shipping fees, COD availability or delivery dates. SQLite runs from `/tmp` on Vercel serverless functions, so account and order records are not durable across cold starts. Do not use this deployment for real customer transactions.
 
 ---
 
@@ -24,7 +26,7 @@ nexora-store/
 │   │   │   ├── CheckoutModal.jsx      # PIN code resolver & multi-gateway payments
 │   │   │   ├── AuthModal.jsx          # JWT authentication
 │   │   │   ├── WishlistModal.jsx
-│   │   │   ├── OrdersModal.jsx        # Live milestone order tracking
+│   │   │   ├── OrdersModal.jsx        # Demo order history
 │   │   │   ├── SellerModal.jsx        # Direct database catalog publisher
 │   │   │   └── ApiDrawer.jsx          # Live SQLite stats & REST traffic inspector
 │   │   ├── context/
@@ -36,7 +38,7 @@ nexora-store/
 │   └── dist/                          # Compiled production assets
 │
 ├── server/                     # Backend (Node.js Express + Native SQLite)
-│   ├── db.js                   # Node 26 node:sqlite DatabaseSync & schema
+│   ├── db.js                   # Node.js node:sqlite DatabaseSync (Node 22.13+) & schema
 │   ├── seed.js                 # 24 products, coupons, and test user seeder
 │   ├── nexora.db               # SQLite database file
 │   ├── middleware/
@@ -64,12 +66,12 @@ nexora-store/
 * **Context State Management**: `CartContext`, `AuthContext`, and `WishlistContext` managing real-time states across tabs and modals.
 * **Responsive UI**: Tailwind CSS glassmorphic header, custom gradients, slide-over drawer animations, and mobile-friendly layouts.
 
-### 2. Real Backend & Native SQLite Database
+### 2. Backend API & Native SQLite Demo Database
 * **Zero External Build Tool Requirement**: Uses Node.js's built-in `node:sqlite` (`DatabaseSync`), ensuring lightning-fast startup with zero `node-gyp` or Python compiler dependencies on Windows.
 * **Persistent Relational Tables**: `products`, `users`, `orders`, `reviews`, `wishlist`, `coupons`, and `api_logs`.
 * **JWT Authentication & Bcrypt Password Hashing**: Secure user registration and session management.
 
-### 3. Shipping & Payment Integrations
+### 3. Postal-Area Lookup & Simulated Checkout
 * **Indian PIN Code Lookup (`/api/shipping/pincode/:pincode`)**:
   * Real-time resolution of 6-digit PIN codes to City, District, State, and Fulfillment Hub.
   * Live integration with India Post Postal Pincode API with instant fallback for major metro hubs (Bengaluru, Delhi, Mumbai, Hyderabad, Chennai, Pune, Kolkata).
