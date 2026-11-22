@@ -73,7 +73,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         discount: couponDiscount,
         couponCode: coupon,
         totalAmount: finalTotal,
-        paymentMethod: paymentMethod === 'upi' ? 'Instant UPI (GPay/PhonePe)' : paymentMethod === 'card' ? 'Credit/Debit Card' : 'Cash on Delivery (COD)',
+        paymentMethod,
         paymentStatus: paymentMethod === 'cod' ? 'PENDING_ON_DELIVERY' : 'PAID_VERIFIED',
         paymentId,
         shippingAddress: fullAddress,
