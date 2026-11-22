@@ -20,6 +20,7 @@ export function ProductCatalog({
   error = '',
   onRetry,
   onClearFilters,
+  onOpenAuth,
   priceFilter,
   onChangePriceFilter,
   sortSelect,
@@ -105,6 +106,7 @@ export function ProductCatalog({
                 key={product.id}
                 product={product}
                 onOpenDetail={onOpenProductDetail}
+                onOpenAuth={onOpenAuth}
               />
             ))}
           </div>
