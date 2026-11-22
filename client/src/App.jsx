@@ -22,6 +22,7 @@ export function App() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // Filters & Search
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -47,6 +48,7 @@ export function App() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      setLoadError('');
       const data = await api.getProducts({
         category: selectedCategory,
         collection: selectedCollection,
@@ -58,6 +60,7 @@ export function App() {
       setProducts(data.products || []);
     } catch (err) {
       console.error('Failed to load products from API:', err);
+      setLoadError(err.message || 'We could not load the catalogue. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -69,6 +72,16 @@ export function App() {
 
   const scrollToCatalog = () => {
     document.getElementById('catalogAnchor')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleClearFilters = () => {
+    setSelectedCategory('All');
+    setSelectedCollection(null);
+    setFlashOnly(false);
+    setSearchQuery('');
+    setPriceFilter('all');
+    setSortSelect('featured');
+    setCatalogTitle('All Collections Catalog');
   };
 
   const handleSelectCategory = (cat) => {
@@ -186,6 +199,10 @@ export function App() {
           <ProductCatalog
             catalogTitle={catalogTitle}
             products={products}
+            loading={loading}
+            error={loadError}
+            onRetry={fetchProducts}
+            onClearFilters={handleClearFilters}
             priceFilter={priceFilter}
             onChangePriceFilter={setPriceFilter}
             sortSelect={sortSelect}
@@ -208,7 +225,7 @@ export function App() {
             NEXORA<span className="text-cyan-400">.in</span>
           </div>
           <p className="text-slate-400">
-            8 Departments • React 18 + Tailwind CSS • Node.js Native SQLite REST API • Express Checkout & Pincode Routing
+            React + Express REST API • Sample catalogue • Simulated checkout • Portfolio demonstration
           </p>
         </div>
       </footer>
