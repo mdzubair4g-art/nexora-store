@@ -6,7 +6,7 @@ const WishlistContext = createContext();
 
 export function WishlistProvider({ children }) {
   const { user } = useAuth();
-  const [wishlistIds, setWishlistIds] = useState([1, 7]);
+  const [wishlistIds, setWishlistIds] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
