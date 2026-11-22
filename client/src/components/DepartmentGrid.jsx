@@ -21,7 +21,8 @@ export function DepartmentGrid({ onSelectCategory, onResetCategory }) {
           </h2>
           <button
             onClick={onResetCategory}
-            className="text-xs font-bold text-cyan-700 hover:underline transition"
+            type="button"
+            className="text-xs font-bold text-cyan-700 hover:underline transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
           >
             View All
           </button>
@@ -30,8 +31,10 @@ export function DepartmentGrid({ onSelectCategory, onResetCategory }) {
           {DEPARTMENTS.map(dept => (
             <button
               key={dept.name}
+              type="button"
               onClick={() => onSelectCategory(dept.name)}
-              className={`group p-3 rounded-xl bg-slate-50 ${dept.hover} border border-slate-100 text-center transition`}
+              aria-label={`Browse ${dept.name}`}
+              className={`group p-3 rounded-xl bg-slate-50 ${dept.hover} border border-slate-100 text-center transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600`}
             >
               <div className={`w-10 h-10 mx-auto rounded-xl ${dept.bg} ${dept.text} flex items-center justify-center text-lg transition group-hover:scale-110`}>
                 <i className={`fa-solid ${dept.icon}`}></i>

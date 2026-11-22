@@ -54,7 +54,7 @@ export function Navbar({
         >
           <i className="fa-solid fa-location-dot text-cyan-400"></i>
           <div>
-            <div className="text-[10px] text-slate-300 leading-tight">Deliver to</div>
+            <div className="text-[10px] text-slate-300 leading-tight">Location preference</div>
             <div className="text-xs font-bold leading-tight">{deliveryLocation}</div>
           </div>
         </button>
@@ -97,7 +97,7 @@ export function Navbar({
           {user?.role === 'admin' && <button
             onClick={onToggleServerDrawer}
             className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/25 transition"
-            title="Inspect Live SQLite Database & REST API Traffic"
+            title="Open admin demo API inspector"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span>Admin: API Inspector</span>
@@ -116,7 +116,7 @@ export function Navbar({
 
           {/* Wishlist */}
           <button
-            onClick={() => setIsWishlistOpen(true)}
+            onClick={() => { if (user) setIsWishlistOpen(true); else onOpenAuth(); }}
             className="relative px-2.5 py-1.5 rounded-xl hover:bg-white/10 transition"
             title="View Wishlist"
           >
@@ -131,8 +131,8 @@ export function Navbar({
             onClick={onOpenOrders}
             className="hidden md:block px-2.5 py-1.5 rounded-xl hover:bg-white/10 text-left transition"
           >
-            <div className="text-[10px] text-slate-300 leading-tight">Track</div>
-            <div className="text-xs font-bold leading-tight">Orders</div>
+            <div className="text-[10px] text-slate-300 leading-tight">My</div>
+            <div className="text-xs font-bold leading-tight">Order History</div>
           </button>
 
           {/* Bag */}

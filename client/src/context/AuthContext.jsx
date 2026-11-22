@@ -14,6 +14,31 @@ export function AuthProvider({ children }) {
   });
   const [token, setToken] = useState(() => localStorage.getItem('nx_token') || null);
 
+  useEffect(() => {
+    if (!token) {
+      setUser(null);
+      localStorage.removeItem('nx_user');
+      return undefined;
+    }
+
+    let active = true;
+    api.getCurrentUser()
+      .then(data => {
+        if (!active) return;
+        setUser(data.user);
+        localStorage.setItem('nx_user', JSON.stringify(data.user));
+      })
+      .catch(error => {
+        if (!active || error.status !== 401) return;
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('nx_user');
+        localStorage.removeItem('nx_token');
+      });
+
+    return () => { active = false; };
+  }, [token]);
+
   const login = async (email, password) => {
     const data = await api.login(email, password);
     setUser(data.user);

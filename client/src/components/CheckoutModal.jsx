@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,38 +7,47 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   const { cart, finalTotal, subtotal, couponDiscount, coupon, clearCart } = useCart();
   const { user } = useAuth();
 
-  const [pincode, setPincode] = useState('560001');
+  const [pincode, setPincode] = useState('');
   const [shippingInfo, setShippingInfo] = useState(null);
+  const [pincodeError, setPincodeError] = useState('');
   const [loadingPincode, setLoadingPincode] = useState(false);
   const [addressLine, setAddressLine] = useState('');
   const [recipientName, setRecipientName] = useState(user?.name || '');
   const [recipientPhone, setRecipientPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [isProcessing, setIsProcessing] = useState(false);
+  const pincodeLookupId = useRef(0);
 
-  // Auto-lookup default pincode on open
   useEffect(() => {
-    if (isOpen && pincode.length === 6) {
-      handlePincodeLookup(pincode);
-    }
-  }, [isOpen]);
+    if (isOpen && user?.name) setRecipientName(user.name);
+    if (!isOpen) pincodeLookupId.current += 1;
+  }, [isOpen, user?.name]);
 
   if (!isOpen) return null;
 
   const handlePincodeLookup = async (code) => {
     if (!/^\d{6}$/.test(code)) return;
+    const requestId = ++pincodeLookupId.current;
     setLoadingPincode(true);
+    setPincodeError('');
     try {
       const data = await api.lookupPincode(code);
-      setShippingInfo(data);
+      if (requestId === pincodeLookupId.current) setShippingInfo(data);
     } catch (err) {
-      setShippingInfo(null);
+      if (requestId === pincodeLookupId.current) {
+        setShippingInfo(null);
+        setPincodeError(err.message || 'Could not verify this PIN code. Please try again.');
+      }
     } finally {
-      setLoadingPincode(false);
+      if (requestId === pincodeLookupId.current) setLoadingPincode(false);
     }
   };
 
   const handlePincodeChange = (val) => {
+    pincodeLookupId.current += 1;
+    setLoadingPincode(false);
+    setPincodeError('');
+    setShippingInfo(null);
     setPincode(val);
     if (val.length === 6) {
       handlePincodeLookup(val);
@@ -54,8 +63,10 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
 
     setIsProcessing(true);
     try {
-      if (!/^\d{10}$/.test(recipientPhone.trim())) throw new Error('Enter a valid 10-digit mobile number.');
-      if (!shippingInfo || shippingInfo.pincode !== pincode) throw new Error('Please verify your delivery PIN code before placing the order.');
+      if (!recipientName.trim() || recipientName.trim().length > 80) throw new Error('Enter a recipient name (up to 80 characters).');
+      if (!/^[6-9]\d{9}$/.test(recipientPhone.trim())) throw new Error('Enter a valid 10-digit Indian mobile number.');
+      if (addressLine.trim().length < 5 || addressLine.trim().length > 350) throw new Error('Enter a delivery address between 5 and 350 characters.');
+      if (!shippingInfo || shippingInfo.pincode !== pincode || !shippingInfo.city || !shippingInfo.state) throw new Error('Please verify your delivery PIN code before placing the order.');
 
       let paymentId = null;
       if (paymentMethod !== 'cod') {
@@ -74,7 +85,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         couponCode: coupon,
         totalAmount: finalTotal,
         paymentMethod,
-        paymentStatus: paymentMethod === 'cod' ? 'PENDING_ON_DELIVERY' : 'PAID_VERIFIED',
+        paymentStatus: paymentMethod === 'cod' ? 'PENDING_ON_DELIVERY' : 'DEMO_SIMULATED',
         paymentId,
         shippingAddress: fullAddress,
         city: shippingInfo?.city || 'Bengaluru',
@@ -97,6 +108,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
+          aria-label="Close checkout"
           className="absolute top-4 right-4 text-xl text-slate-400 hover:text-slate-600 transition"
         >
           &times;
@@ -107,18 +119,18 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
             <i className="fa-solid fa-shield-halved"></i>
           </div>
           <div>
-            <h3 className="text-base font-black text-slate-900 leading-tight">Secure Express Checkout</h3>
+            <h3 className="text-base font-black text-slate-900 leading-tight">Checkout Demo</h3>
             <p className="text-[11px] text-amber-700">Portfolio demo checkout · No real payment is processed</p>
           </div>
         </div>
 
         <form onSubmit={handleConfirmOrder} className="space-y-4 text-xs">
-          {/* Section 1: Delivery Address & Real Pincode API */}
+          {/* Section 1: Delivery Address & Postal-Area Lookup */}
           <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2.5">
             <div className="flex items-center justify-between">
               <label className="font-extrabold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                 <i className="fa-solid fa-location-dot text-cyan-600"></i>
-                1. Delivery & PIN Code Lookup
+                1. Address & Postal-Area Lookup
               </label>
               {loadingPincode && (
                 <span className="text-[10px] text-cyan-600 font-bold animate-pulse">
@@ -158,8 +170,9 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                   maxLength={6}
                   required
                   value={pincode}
-                  onChange={(e) => handlePincodeChange(e.target.value)}
-                  placeholder="560001"
+                  inputMode="numeric"
+                  onChange={(e) => handlePincodeChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="6-digit PIN"
                   className="w-full border rounded-xl px-2.5 py-1.5 bg-white font-mono font-bold text-xs"
                 />
               </div>
@@ -186,13 +199,10 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
               />
             </div>
 
+            {pincodeError && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-2 text-[10px] font-semibold text-rose-700">{pincodeError}</p>}
             {shippingInfo && (
-              <div className="text-[10px] bg-emerald-50 border border-emerald-200 text-emerald-800 p-2 rounded-lg flex items-center justify-between">
-                <div>
-                  <span className="font-bold">Fastest Delivery: </span>
-                  <span>{shippingInfo.deliveryDate} ({shippingInfo.hub})</span>
-                </div>
-                <span className="font-black text-emerald-700">FREE</span>
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-[10px] text-emerald-800">
+                <strong>Postal area identified.</strong> Courier coverage, shipping fees, COD availability and delivery dates are not connected to this portfolio demo.
               </div>
             )}
           </div>
@@ -275,7 +285,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                 Securing Payment & Placing Order...
               </>
             ) : (
-              (paymentMethod === 'cod' ? 'Place Demo COD Order' : `Simulate Payment · ₹${finalTotal.toLocaleString('en-IN')}`)
+              (paymentMethod === 'cod' ? 'Place Demo COD Order' : `Simulate ${paymentMethod.toUpperCase()} · ₹${finalTotal.toLocaleString('en-IN')}`)
             )}
           </button>
         </form>

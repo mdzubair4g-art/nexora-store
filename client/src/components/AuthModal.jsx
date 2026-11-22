@@ -89,8 +89,8 @@ export function AuthModal({ isOpen, onClose }) {
 
             <p className="text-xs text-slate-500 mb-4">
               {mode === 'login'
-                ? 'Sign in to access your saved wishlist and track live orders.'
-                : 'Create an account to unlock exclusive member discounts and instant express checkout.'}
+                ? 'Sign in to access your saved wishlist and view demo order records.'
+                : 'Create an account to save wishlist items and try the portfolio checkout flow.'}
             </p>
 
             {error && (

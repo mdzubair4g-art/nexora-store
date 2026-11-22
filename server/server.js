@@ -19,19 +19,31 @@ const docsRoutes = require('./routes/docs');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  if (req.path.startsWith('/api')) res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
 // Enable CORS for frontend development
 const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:5000').split(',').map(origin => origin.trim()).filter(Boolean);
 
 app.use(cors({
   origin(origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Origin is not allowed by CORS'));
+    const error = new Error('Origin is not allowed by CORS');
+    error.status = 403;
+    return callback(error);
   },
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '64kb', strict: true }));
 app.use(authMiddleware);
 
 // Health check endpoint
@@ -41,6 +53,10 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     platform: 'NEXORA.in Full-Stack Engine',
     database: 'SQLite (Node.js native DatabaseSync)',
+    persistence: process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
+      ? 'Temporary serverless storage; records may be lost after a cold start.'
+      : 'Local SQLite file on the host disk.',
+    checkoutMode: 'Portfolio simulation only; no real payment or courier is connected.',
     timestamp: new Date().toISOString()
   });
 });
@@ -74,8 +90,16 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).json({ error: 'Internal server error', message: err.message });
+  const status = Number.isInteger(err.status) && err.status >= 400 && err.status < 500 ? err.status : 500;
+  if (status >= 500) console.error('Server error:', err);
+  const message = status === 413
+    ? 'Request body is too large.'
+    : status === 403
+      ? 'This request origin is not allowed.'
+      : status === 400
+        ? 'The request body is invalid.'
+        : 'Internal server error. Please try again later.';
+  res.status(status).json({ error: message });
 });
 
 if (!process.env.VERCEL) {

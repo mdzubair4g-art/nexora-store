@@ -8,7 +8,7 @@ const DOCS_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXORA.in — Backend REST API & Database Explorer</title>
+  <title>NEXORA.in — Backend REST API Explorer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
@@ -30,7 +30,7 @@ const DOCS_HTML = `<!DOCTYPE html>
           <span class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono">v2.0 • Online</span>
         </h1>
         <p class="text-xs text-slate-400 mt-0.5">
-          Dedicated Node.js Express REST API with native SQLite Database (<code class="text-cyan-400">server/nexora.db</code>)
+          Node.js + Express REST API with a SQLite demo database
         </p>
       </div>
     </div>
@@ -44,7 +44,7 @@ const DOCS_HTML = `<!DOCTYPE html>
     </div>
   </header>
 
-  <!-- Live SQLite Database Statistics -->
+  <!-- Database Statistics -->
   <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
     <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 text-center">
       <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Products DB</div>
@@ -59,7 +59,7 @@ const DOCS_HTML = `<!DOCTYPE html>
     <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 text-center">
       <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Orders DB</div>
       <div id="statOrders" class="text-2xl font-black text-orange-400 mt-1">...</div>
-      <div class="text-[10px] text-slate-500 mt-0.5">Live Tracking Stages</div>
+      <div class="text-[10px] text-slate-500 mt-0.5">Demo Order Status</div>
     </div>
     <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 text-center">
       <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Reviews DB</div>
@@ -74,7 +74,7 @@ const DOCS_HTML = `<!DOCTYPE html>
       <i class="fa-solid fa-code text-cyan-400"></i> Interactive Endpoint Console
     </h2>
     <p class="text-xs text-slate-400">
-      Click "Execute" on any endpoint below to send a live HTTP request directly to the backend and inspect the real-time SQLite database output.
+      Click "Execute" on any endpoint below to send a live HTTP request directly to the backend and inspect the backend response output.
     </p>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,7 +112,7 @@ const DOCS_HTML = `<!DOCTYPE html>
           </div>
           <button onclick="runTest('GET', '/api/shipping/pincode/560001')" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-lg">Execute</button>
         </div>
-        <p class="text-[11px] text-slate-400">Real-time Indian postal PIN code resolution & delivery ETA calculation.</p>
+        <p class="text-[11px] text-slate-400">Postal-area lookup only. Courier serviceability and delivery dates are not checked.</p>
       </div>
 
       <!-- Endpoint 4: Auth -->
@@ -148,7 +148,7 @@ const DOCS_HTML = `<!DOCTYPE html>
           </div>
           <button onclick="runTest('POST', '/api/payments/create-order', { amount: 3195, currency: 'INR' })" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-lg">Execute</button>
         </div>
-        <p class="text-[11px] text-slate-400">Creates Razorpay / Payment Gateway order in paise with currency INR.</p>
+        <p class="text-[11px] text-slate-400">Creates a simulated demo payment response. No payment provider is contacted and no money is charged.</p>
       </div>
 
       <!-- Endpoint 7: Orders List -->
@@ -160,7 +160,7 @@ const DOCS_HTML = `<!DOCTYPE html>
           </div>
           <button onclick="runTest('GET', '/api/orders')" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-lg">Execute</button>
         </div>
-        <p class="text-[11px] text-slate-400">Fetch persistent customer orders with items, addresses & tracking stages.</p>
+        <p class="text-[11px] text-slate-400">Fetch the signed-in customer's demo order records. Courier tracking is not connected.</p>
       </div>
 
       <!-- Endpoint 8: Stats & Logs -->
@@ -172,7 +172,7 @@ const DOCS_HTML = `<!DOCTYPE html>
           </div>
           <button onclick="runTest('GET', '/api/stats')" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-lg">Execute</button>
         </div>
-        <p class="text-[11px] text-slate-400">Real-time table counts and the latest 25 REST API traffic log entries.</p>
+        <p class="text-[11px] text-slate-400">Runtime database counts and the latest 25 REST API request log entries.</p>
       </div>
 
     </div>
@@ -186,7 +186,7 @@ const DOCS_HTML = `<!DOCTYPE html>
         </span>
         <span id="responseStatus" class="font-mono text-slate-400">Ready</span>
       </div>
-      <pre id="outputBox" class="h-64 overflow-y-auto p-3 code-box rounded-xl font-mono text-xs text-emerald-400 leading-relaxed">Select any endpoint above and click "Execute" to inspect the live response.</pre>
+      <pre id="outputBox" class="h-64 overflow-y-auto p-3 code-box rounded-xl font-mono text-xs text-emerald-400 leading-relaxed">Select an endpoint above and click "Execute" to inspect its API response.</pre>
     </div>
   </section>
 

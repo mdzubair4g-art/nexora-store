@@ -35,12 +35,13 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+    if (!user) return alert('Sign in before submitting a review.');
     if (!revComment.trim()) return;
 
     setIsSubmitting(true);
     try {
       await api.addReview(product.id, {
-        user: user?.name || 'Verified Shopper',
+        user: user.name,
         rating: Number(revRating),
         comment: revComment.trim()
       });
@@ -69,8 +70,10 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
           {/* Product Image */}
           <div className="md:col-span-5 bg-slate-50 rounded-2xl p-6 flex items-center justify-center border border-slate-100">
             <img
-              src={product.image}
+              src={product.image || '/nexora-placeholder.svg'}
               alt={product.title}
+              loading="lazy"
+              onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = '/nexora-placeholder.svg'; }}
               className="max-h-80 object-contain"
             />
           </div>
@@ -90,7 +93,7 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
                 <span>★</span> {product.rating}
               </span>
               <span className="text-slate-500">
-                {product.reviewsCount?.toLocaleString('en-IN')} verified ratings
+                {product.reviewsCount?.toLocaleString('en-IN')} sample rating votes
               </span>
             </div>
 
@@ -109,7 +112,7 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
                 )}
               </div>
               <div className="text-[11px] text-slate-500 mt-0.5">
-                Eligible for coupon <strong className="text-orange-600">NEXORA10</strong>
+                Try any currently available sample coupon at checkout
               </div>
             </div>
 
@@ -155,22 +158,24 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
             </div>
             <div className="text-xs text-cyan-700 font-semibold flex items-center gap-1.5">
               <i className="fa-solid fa-truck-fast"></i>
-              FREE Express Delivery Available
+              Delivery service is not connected in this demo
             </div>
             <div className="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-              In Stock & Ready to Ship
+              Sample stock: {Number(product.stock) > 0 ? 'Available' : 'Out of stock'}
             </div>
 
             <button
               onClick={() => addToCart(product, selectedVariant)}
-              className="w-full btn-primary py-2.5 rounded-xl text-xs font-bold shadow"
+              disabled={Number(product.stock) <= 0}
+              className="w-full btn-primary py-2.5 rounded-xl text-xs font-bold shadow disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Add to Bag
+              {Number(product.stock) <= 0 ? 'Out of stock' : 'Add to Bag'}
             </button>
             <button
               onClick={() => onBuyNow(product, selectedVariant)}
-              className="w-full btn-cyan py-2.5 rounded-xl text-xs font-bold shadow"
+              disabled={Number(product.stock) <= 0}
+              className="w-full btn-cyan py-2.5 rounded-xl text-xs font-bold shadow disabled:cursor-not-allowed disabled:opacity-50"
             >
               Buy Now
             </button>
@@ -200,7 +205,7 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
                 onChange={(e) => setRevComment(e.target.value)}
                 required
                 rows={3}
-                placeholder="Share your verified experience..."
+                placeholder="Share your product feedback..."
                 className="w-full border rounded-xl p-3 outline-none focus:ring-1 focus:ring-cyan-500"
               />
 
@@ -232,7 +237,7 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
                     <div className="text-amber-500 font-bold my-1">
                       {'★'.repeat(r.rating)}
                       <span className="text-emerald-700 ml-1.5 font-normal text-[11px]">
-                        Verified Purchase
+                        Customer review (not purchase-verified)
                       </span>
                     </div>
                     <p className="text-slate-700">{r.comment}</p>

@@ -23,7 +23,7 @@ export function WishlistModal() {
           <h3 className="text-xl font-black text-slate-900">Saved Wishlist</h3>
         </div>
         <p className="text-xs text-slate-500 mb-4">
-          Items saved in your persistent SQLite database.
+          Wishlist items are linked to your signed-in account. Deployed demo storage may reset.
         </p>
 
         <div className="flex-1 overflow-y-auto space-y-3">

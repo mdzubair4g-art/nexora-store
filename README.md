@@ -1,138 +1,117 @@
-# NEXORA.in — Full-Stack E-Commerce Marketplace Platform
+# NEXORA — Full-Stack Marketplace Portfolio Project
 
-A modern, production-grade e-commerce application ported from a single-file prototype into a decoupled, modular full-stack architecture with **React 18 + Vite + Tailwind CSS**, **Node.js Express REST API**, **native SQLite database**, and **Payment & PIN Code Shipping Integrations**.
+NEXORA is an e-commerce marketplace portfolio project built with **React 18, Vite, Tailwind CSS, Node.js, Express, and SQLite**. It demonstrates a frontend connected to a backend REST API, account authentication, catalogue search and filters, cart and wishlist flows, administrator-only product publishing, and demo order records.
 
----
+> **Demo notice:** product listings, prices, ratings, stock and discounts are sample data. UPI/card checkout simulates a response only; no real payment provider is connected and no money is charged. PIN lookup identifies a postal area only; it does not verify courier availability, COD coverage, shipping fees or delivery dates. On Vercel, SQLite is stored in temporary `/tmp` space, so account, wishlist and order records are not durable across serverless cold starts. This deployment is for portfolio demonstration, not a live store.
 
-## Architecture Overview
+## Architecture
 
 ```text
-nexora-store/
-├── client/                     # Frontend (React 18, Vite, Tailwind CSS)
-│   ├── src/
-│   │   ├── components/         # Modular UI Components
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── CategoryBar.jsx
-│   │   │   ├── HeroBanner.jsx
-│   │   │   ├── DepartmentGrid.jsx
-│   │   │   ├── CuratedCollections.jsx
-│   │   │   ├── FlashDeals.jsx
-│   │   │   ├── ProductCatalog.jsx
-│   │   │   ├── ProductCard.jsx
-│   │   │   ├── ProductDetailModal.jsx
-│   │   │   ├── CartDrawer.jsx
-│   │   │   ├── CheckoutModal.jsx      # PIN code resolver & multi-gateway payments
-│   │   │   ├── AuthModal.jsx          # JWT authentication
-│   │   │   ├── WishlistModal.jsx
-│   │   │   ├── OrdersModal.jsx        # Live milestone order tracking
-│   │   │   ├── SellerModal.jsx        # Direct database catalog publisher
-│   │   │   └── ApiDrawer.jsx          # Live SQLite stats & REST traffic inspector
-│   │   ├── context/
-│   │   │   ├── AuthContext.jsx
-│   │   │   ├── CartContext.jsx
-│   │   │   └── WishlistContext.jsx
-│   │   └── services/
-│   │       └── api.js                 # Centralized fetch client
-│   └── dist/                          # Compiled production assets
-│
-├── server/                     # Backend (Node.js Express + Native SQLite)
-│   ├── db.js                   # Node 26 node:sqlite DatabaseSync & schema
-│   ├── seed.js                 # 24 products, coupons, and test user seeder
-│   ├── nexora.db               # SQLite database file
-│   ├── middleware/
-│   │   └── auth.js             # JWT bearer verification middleware
-│   └── routes/
-│       ├── auth.js             # /api/auth (register, login, me)
-│       ├── products.js         # /api/products (filter, sort, search, review)
-│       ├── orders.js           # /api/orders (placement, tracking, history)
-│       ├── wishlist.js         # /api/wishlist (toggle, get by user)
-│       ├── coupons.js          # /api/coupons (apply code, validation)
-│       ├── shipping.js         # /api/shipping (pincode lookup & delivery ETA)
-│       ├── payments.js         # /api/payments (Razorpay/Stripe order & verify)
-│       └── stats.js            # /api/stats (database metrics & traffic logs)
-│
-├── standalone.html             # Original self-contained single-file prototype
-└── package.json                # Project root runner scripts
+Browser → React + Vite + Tailwind CSS → /api → Node.js + Express → SQLite
 ```
 
----
+- **Frontend:** reusable React components, responsive styling, and Context API for account, cart and wishlist state.
+- **Backend:** Express REST routes for authentication, products, orders, wishlist, coupons, postal-area lookup, simulated payments and admin statistics.
+- **Database:** SQLite tables for users, products, orders, reviews, wishlist, coupons and API logs.
+- **Authentication:** JWT bearer tokens and bcrypt password hashing.
 
-## Features Implemented
+## Features
 
-### 1. Modern Frontend (React 18 + Vite + Tailwind CSS)
-* **Modular React Components**: Reusable components separated cleanly with typed prop contracts.
-* **Context State Management**: `CartContext`, `AuthContext`, and `WishlistContext` managing real-time states across tabs and modals.
-* **Responsive UI**: Tailwind CSS glassmorphic header, custom gradients, slide-over drawer animations, and mobile-friendly layouts.
+- Browse departments and curated collections.
+- Search, filter by price and sort products.
+- Open product details and view sample review information.
+- Add products to cart and adjust quantities.
+- Register, sign in and manage a personal wishlist.
+- Admin-only product publishing, inventory management (sample price, MRP and stock updates), and statistics.
+- Compare up to three products side by side using price, rating, stock and product details.
+- Recently viewed products are saved on the current device, with an option to clear the history.
+- View demo order records for the signed-in account.
+- Resolve an Indian postal PIN to its postal area.
+- Try simulated payment and demo Cash on Delivery flows.
 
-### 2. Real Backend & Native SQLite Database
-* **Zero External Build Tool Requirement**: Uses Node.js's built-in `node:sqlite` (`DatabaseSync`), ensuring lightning-fast startup with zero `node-gyp` or Python compiler dependencies on Windows.
-* **Persistent Relational Tables**: `products`, `users`, `orders`, `reviews`, `wishlist`, `coupons`, and `api_logs`.
-* **JWT Authentication & Bcrypt Password Hashing**: Secure user registration and session management.
+## Run locally
 
-### 3. Shipping & Payment Integrations
-* **Indian PIN Code Lookup (`/api/shipping/pincode/:pincode`)**:
-  * Real-time resolution of 6-digit PIN codes to City, District, State, and Fulfillment Hub.
-  * Live integration with India Post Postal Pincode API with instant fallback for major metro hubs (Bengaluru, Delhi, Mumbai, Hyderabad, Chennai, Pune, Kolkata).
-  * Automated delivery date calculation (Next-Day Express vs Standard).
-* **Payment Gateway Workflow (`/api/payments`)**:
-  * Gateway order creation compatible with Razorpay / Stripe formats (`create-order`).
-  * Instant UPI integration (Google Pay, PhonePe, Paytm, CRED).
-  * Card authorization simulation with transaction references (`verify`).
-  * Cash on Delivery (COD) order management.
+Requires **Node.js 22.13 or newer** and npm.
 
----
+Install the dependencies:
 
-## Quickstart Guide
-
-### 1. Start the Server & Application
-From the `nexora-store` root folder:
 ```powershell
-# Run the complete server (serves API on :5000 and compiled React app)
-npm start
+npm install
+npm install --prefix client
 ```
-Open **`http://localhost:5000`** in your browser.
 
-### 2. Development Mode (Hot-Reloading)
-To run with live Vite HMR:
+Start the backend in Terminal 1:
+
 ```powershell
-# Terminal 1: Run Backend API
 npm run server
+```
 
-# Terminal 2: Run Vite Dev Server
+Start the frontend in Terminal 2:
+
+```powershell
 npm run client
 ```
-Open **`http://localhost:3000`** in your browser.
 
-### 3. Re-seed Database
+Open **http://localhost:3000**. Vite proxies `/api` requests to the Express backend on port 5000.
+
+Build the frontend:
+
 ```powershell
-npm run seed
+npm run build --prefix client
 ```
 
-### 4. Test Accounts
-* **Shopper**: `alex@nexora.in` / `nexora123`
-* **Admin**: `admin@nexora.in` / `nexora123`
-* **Demo Promo Codes**: `NEXORA10` (10% off), `WELCOME20` (20% off), `FESTIVE500` (₹500 off)
+To serve the compiled frontend and API together locally, build first and then run `npm start`.
 
+## Environment variables
 
----
+| Variable | Purpose |
+| --- | --- |
+| `JWT_SECRET` | Private JWT signing secret; required in production and should be at least 32 bytes. |
+| `CORS_ORIGINS` | Comma-separated trusted origins when frontend and API use different domains. |
+| `NODE_ENV` | Use `production` to enable production-mode settings. |
 
-## Security & Demo Notes
+Never commit real `.env` files, database credentials, JWT secrets or customer data.
 
-- **Payments are simulated.** The UPI and card options are portfolio demonstrations only; they do not connect to Razorpay or Stripe and never charge money.
-- **Authentication is required** to place orders, view personal order history, save wishlist items, and access administrator tools.
-- Product publishing and the API/database inspector are restricted to accounts with the `admin` role.
-- Set a strong `JWT_SECRET` in your environment before production deployment. The server intentionally refuses to start in production without it.
-- Configure `CORS_ORIGINS` as a comma-separated list of trusted frontend origins. For local development, the defaults allow `http://localhost:3000` and `http://localhost:5000`.
-- The demo shopper and administrator accounts are created only outside production: `alex@nexora.in` and `admin@nexora.in`, both with the local demo password `nexora123`. Change or remove demo accounts before sharing a development deployment.
-- Native `node:sqlite` requires Node.js 22.13 or newer. Use a persistent database service for a real production deployment; serverless `/tmp` storage is temporary and is not a durable order database.
+## API examples
 
-### Environment variables
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/health` | Backend health and runtime information |
+| POST | `/api/auth/register` | Register a shopper account |
+| POST | `/api/auth/login` | Sign in and receive a JWT |
+| GET | `/api/auth/me` | Read the current signed-in account |
+| GET | `/api/products` | Browse and filter the catalogue |
+| GET | `/api/products/:id` | Read a product and its reviews |
+| PATCH | `/api/products/:id` | Update sample price, MRP and stock (administrator only) |
+| POST | `/api/orders` | Create a demo order (authenticated) |
+| GET | `/api/orders` | Read the signed-in user's order history |
+| GET/POST | `/api/wishlist` | Read or update the signed-in user's wishlist |
+| GET | `/api/shipping/pincode/:pincode` | Resolve a postal area only |
+| GET | `/api/payments/methods` | List demo payment methods |
 
-```env
-NODE_ENV=production
-JWT_SECRET=replace-with-a-long-random-secret
-CORS_ORIGINS=https://your-frontend-domain.example
-NEXORA_DISABLE_DEMO_USERS=true
-```
+Administrator endpoints require an authenticated administrator account.
 
-Do not commit real secrets or customer data.
+## Security and known limitations
+
+- Order placement, order history and wishlist routes require authentication.
+- Customer identity is derived from the signed JWT, not trusted from a supplied email.
+- Order totals, product prices, coupon discounts and stock are recalculated by the backend.
+- Product publishing, sample inventory updates and database statistics are administrator-only.
+- Product comparison and recently viewed history are stored in the shopper's browser; they are not synced between devices.
+- Passwords are hashed with bcrypt; production startup requires a private `JWT_SECRET`.
+- UPI/card payment endpoints are simulations. They do not contact Razorpay, Stripe, UPI apps or banks.
+- PIN lookup does not integrate a courier partner or provide verified delivery promises.
+- Vercel's temporary SQLite storage is not durable. A persistent database is required before accounts and orders can be used in real deployments.
+- Seed catalogue data is not verified supplier inventory, pricing or real promotional data.
+
+## Roadmap
+
+1. Connect persistent PostgreSQL storage for deployed accounts, wishlists and orders.
+2. Add automated API tests and deployment smoke tests.
+3. Integrate a payment provider only if the project is intentionally prepared for real transactions.
+4. Integrate a courier service before offering delivery dates, shipping fees or serviceability.
+5. Connect verified supplier inventory and genuine store policies before any public store launch.
+
+## Repository
+
+- GitHub: https://github.com/mdzubair4g-art/nexora-store
