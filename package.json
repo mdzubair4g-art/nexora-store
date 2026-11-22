@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "NEXORA.in — Modern Full-Stack E-Commerce Marketplace (React 18 + Node.js + SQLite)",
   "engines": {
-    "node": ">=20.x"
+    "node": ">=22.5.0"
   },
   "scripts": {
     "start": "node server/server.js",
