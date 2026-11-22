@@ -36,7 +36,7 @@ export function CategoryBar({
         onClick={onSelectFlashDeals}
         className="text-amber-300 font-bold hover:underline whitespace-nowrap transition"
       >
-        <i className="fa-solid fa-bolt mr-1"></i>Flash Deals
+        <i className="fa-solid fa-bolt mr-1"></i>Featured Picks
       </button>
 
       {CATEGORIES.map(cat => (
