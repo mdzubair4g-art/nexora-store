@@ -2,7 +2,7 @@ const API_BASE = '/api';
 
 function getAuthHeader() {
   const token = localStorage.getItem('nx_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return token ? { Authorization: 'Bearer ' + token } : {};
 }
 
 export const api = {
@@ -16,7 +16,7 @@ export const api = {
     if (params.priceRange && params.priceRange !== 'all') qs.append('priceRange', params.priceRange);
     if (params.sort && params.sort !== 'featured') qs.append('sort', params.sort);
 
-    const res = await fetch(`${API_BASE}/products?${qs.toString()}`);
+    const res = await fetch(API_BASE + '/products?' + qs.toString());
     if (!res.ok) {
       const error = new Error('Failed to load products. Please try again.');
       error.status = res.status;
@@ -26,13 +26,13 @@ export const api = {
   },
 
   async getProductById(id) {
-    const res = await fetch(`${API_BASE}/products/${id}`);
+    const res = await fetch(API_BASE + '/products/' + id);
     if (!res.ok) throw new Error('Product not found');
     return res.json();
   },
 
   async createProduct(payload) {
-    const res = await fetch(`${API_BASE}/products`, {
+    const res = await fetch(API_BASE + '/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(payload)
@@ -44,8 +44,23 @@ export const api = {
     return res.json();
   },
 
+  async updateProduct(id, payload) {
+    const res = await fetch(API_BASE + '/products/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const error = new Error(err.error || 'Failed to update product');
+      error.status = res.status;
+      throw error;
+    }
+    return res.json();
+  },
+
   async addReview(productId, review) {
-    const res = await fetch(`${API_BASE}/products/${productId}/reviews`, {
+    const res = await fetch(API_BASE + '/products/' + productId + '/reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(review)
@@ -59,7 +74,7 @@ export const api = {
 
   // Auth
   async getCurrentUser() {
-    const res = await fetch(`${API_BASE}/auth/me`, { headers: getAuthHeader() });
+    const res = await fetch(API_BASE + '/auth/me', { headers: getAuthHeader() });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       const error = new Error(data.error || 'Could not verify the signed-in account.');
@@ -70,7 +85,7 @@ export const api = {
   },
 
   async login(email, password) {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    const res = await fetch(API_BASE + '/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -81,7 +96,7 @@ export const api = {
   },
 
   async register(name, email, password) {
-    const res = await fetch(`${API_BASE}/auth/register`, {
+    const res = await fetch(API_BASE + '/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password })
@@ -92,14 +107,14 @@ export const api = {
   },
 
   // Wishlist
-  async getWishlist(email) {
-    const res = await fetch(`${API_BASE}/wishlist`, { headers: getAuthHeader() });
+  async getWishlist() {
+    const res = await fetch(API_BASE + '/wishlist', { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to load wishlist');
     return res.json();
   },
 
-  async toggleWishlist(email, productId) {
-    const res = await fetch(`${API_BASE}/wishlist/toggle`, {
+  async toggleWishlist(productId) {
+    const res = await fetch(API_BASE + '/wishlist/toggle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify({ productId })
@@ -110,7 +125,7 @@ export const api = {
 
   // Coupons
   async applyCoupon(code, subtotal) {
-    const res = await fetch(`${API_BASE}/coupons/apply`, {
+    const res = await fetch(API_BASE + '/coupons/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code, subtotal })
@@ -120,24 +135,24 @@ export const api = {
     return data;
   },
 
-  // Shipping & Pincode Lookup (Option 4)
+  // Postal-area lookup
   async lookupPincode(pincode) {
-    const res = await fetch(`${API_BASE}/shipping/pincode/${pincode}`);
+    const res = await fetch(API_BASE + '/shipping/pincode/' + pincode);
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Pincode not serviceable');
+    if (!res.ok) throw new Error(data.error || 'Postal lookup failed');
     return data;
   },
 
-  // Payment Gateway (Option 4)
+  // Demo payment methods
   async getPaymentMethods() {
-    const res = await fetch(`${API_BASE}/payments/methods`);
+    const res = await fetch(API_BASE + '/payments/methods');
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Could not load demo payment methods.');
     return data;
   },
 
   async createPaymentOrder(amount, receipt) {
-    const res = await fetch(`${API_BASE}/payments/create-order`, {
+    const res = await fetch(API_BASE + '/payments/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount, receipt })
@@ -147,7 +162,7 @@ export const api = {
   },
 
   async verifyPayment(payload) {
-    const res = await fetch(`${API_BASE}/payments/verify`, {
+    const res = await fetch(API_BASE + '/payments/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -159,7 +174,7 @@ export const api = {
 
   // Orders
   async placeOrder(orderData) {
-    const res = await fetch(`${API_BASE}/orders`, {
+    const res = await fetch(API_BASE + '/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       body: JSON.stringify(orderData)
@@ -170,16 +185,14 @@ export const api = {
   },
 
   async getOrders() {
-    const res = await fetch(`${API_BASE}/orders`, {
-      headers: getAuthHeader()
-    });
+    const res = await fetch(API_BASE + '/orders', { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to fetch orders');
     return res.json();
   },
 
-  // Server Inspector Stats
+  // Admin API inspector
   async getStats() {
-    const res = await fetch(`${API_BASE}/stats`, { headers: getAuthHeader() });
+    const res = await fetch(API_BASE + '/stats', { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to fetch stats');
     return res.json();
   }

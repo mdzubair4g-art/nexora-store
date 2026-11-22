@@ -35,22 +35,18 @@ router.get('/', (req, res) => {
     query += ' AND category = ?';
     params.push(category);
   }
-
   if (collection) {
     query += ' AND collection = ?';
     params.push(collection);
   }
-
   if (flashOnly === 'true' || flashOnly === '1') {
     query += ' AND flash_deal = 1';
   }
-
   if (search && search.trim()) {
     query += ' AND (LOWER(title) LIKE ? OR LOWER(brand) LIKE ? OR LOWER(category) LIKE ?)';
-    const term = `%${search.trim().toLowerCase()}%`;
+    const term = '%' + search.trim().toLowerCase() + '%';
     params.push(term, term, term);
   }
-
   if (priceRange === 'under2000') {
     query += ' AND price < 2000';
   } else if (priceRange === '2000to10000') {
@@ -71,8 +67,7 @@ router.get('/', (req, res) => {
 
   const rows = db.prepare(query).all(...params);
   const products = rows.map(formatProduct);
-
-  logApiCall('GET', '/api/products', 200, `${products.length} products returned`);
+  logApiCall('GET', '/api/products', 200, products.length + ' products returned');
   res.json({ count: products.length, products });
 });
 
@@ -80,14 +75,12 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   const id = Number(req.params.id);
   const p = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
-
   if (!p) {
-    logApiCall('GET', `/api/products/${id}`, 404, 'Product not found');
+    logApiCall('GET', '/api/products/' + id, 404, 'Product not found');
     return res.status(404).json({ error: 'Product not found' });
   }
 
   const reviews = db.prepare('SELECT id, user_name, rating, comment, created_at FROM reviews WHERE product_id = ? ORDER BY id DESC').all(id);
-
   const product = formatProduct(p);
   product.reviews = reviews.map(r => ({
     id: r.id,
@@ -96,8 +89,7 @@ router.get('/:id', (req, res) => {
     comment: r.comment,
     date: new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
   }));
-
-  logApiCall('GET', `/api/products/${id}`, 200, product.title.slice(0, 25));
+  logApiCall('GET', '/api/products/' + id, 200, product.title.slice(0, 25));
   res.json(product);
 });
 
@@ -112,18 +104,19 @@ router.post('/', requireAuth, requireRole('admin'), (req, res) => {
 
   const offerPrice = Number(price);
   const maxPrice = mrp ? Number(mrp) : offerPrice + Math.round(offerPrice * 0.25);
+  if (!Number.isSafeInteger(offerPrice) || offerPrice < 1 || !Number.isSafeInteger(maxPrice) || maxPrice < offerPrice || maxPrice > 100000000) {
+    return res.status(400).json({ error: 'Enter a valid whole-number price and an MRP equal to or above it.' });
+  }
+
   const brandName = brand ? brand.trim() : 'NEXORA Studio';
   const defaultImg = image && image.trim() ? image.trim() : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
   const highlightList = Array.isArray(highlights) ? highlights : (highlights ? [highlights] : ['Verified Marketplace Listing']);
   const variantList = Array.isArray(variants) && variants.length > 0 ? variants : ['Standard Edition'];
 
-  const stmt = db.prepare(`
-    INSERT INTO products (
-      title, brand, category, collection, price, mrp,
-      rating, reviews_count, flash_deal, variants_json, image, highlights_json, stock
-    ) VALUES (?, ?, ?, ?, ?, ?, 4.9, 1, 1, ?, ?, ?, 25)
-  `);
-
+  const stmt = db.prepare(
+    'INSERT INTO products (title, brand, category, collection, price, mrp, rating, reviews_count, flash_deal, variants_json, image, highlights_json, stock) ' +
+    'VALUES (?, ?, ?, ?, ?, ?, 4.9, 1, 1, ?, ?, ?, 25)'
+  );
   const info = stmt.run(
     title.trim(),
     brandName,
@@ -138,9 +131,39 @@ router.post('/', requireAuth, requireRole('admin'), (req, res) => {
 
   const newId = Number(info.lastInsertRowid);
   const created = db.prepare('SELECT * FROM products WHERE id = ?').get(newId);
-
-  logApiCall('POST', '/api/products', 201, `Published: ${title.slice(0, 25)}`);
+  logApiCall('POST', '/api/products', 201, 'Published product ' + newId);
   res.status(201).json(formatProduct(created));
+});
+
+// PATCH stock and sample pricing (admin only)
+router.patch('/:id', requireAuth, requireRole('admin'), (req, res) => {
+  const productId = Number(req.params.id);
+  if (!Number.isSafeInteger(productId) || productId <= 0) {
+    return res.status(400).json({ error: 'A valid product ID is required.' });
+  }
+
+  const current = db.prepare('SELECT id FROM products WHERE id = ?').get(productId);
+  if (!current) {
+    logApiCall('PATCH', '/api/products/' + productId, 404, 'Product not found');
+    return res.status(404).json({ error: 'Product not found.' });
+  }
+
+  const price = Number(req.body?.price);
+  const mrp = Number(req.body?.mrp);
+  const stock = Number(req.body?.stock);
+  if (!Number.isSafeInteger(price) || price < 1 || price > 100000000 ||
+      !Number.isSafeInteger(mrp) || mrp < price || mrp > 100000000 ||
+      !Number.isSafeInteger(stock) || stock < 0 || stock > 1000000) {
+    return res.status(400).json({
+      error: 'Enter whole-number prices, set MRP equal to or above the selling price, and use stock from 0 to 1,000,000.'
+    });
+  }
+
+  db.prepare('UPDATE products SET price = ?, mrp = ?, stock = ? WHERE id = ?')
+    .run(price, mrp, stock, productId);
+  const updated = db.prepare('SELECT * FROM products WHERE id = ?').get(productId);
+  logApiCall('PATCH', '/api/products/' + productId, 200, 'Admin updated sample price and stock');
+  return res.json(formatProduct(updated));
 });
 
 // POST user review for a product
@@ -153,28 +176,19 @@ router.post('/:id/reviews', requireAuth, (req, res) => {
   }
 
   const prod = db.prepare('SELECT id, rating, reviews_count FROM products WHERE id = ?').get(productId);
-  if (!prod) {
-    return res.status(404).json({ error: 'Product not found' });
-  }
+  if (!prod) return res.status(404).json({ error: 'Product not found' });
 
   const userName = String(req.user.name || 'Verified Buyer').slice(0, 80);
   const numRating = Number(rating);
+  db.prepare('INSERT INTO reviews (product_id, user_name, rating, comment) VALUES (?, ?, ?, ?)')
+    .run(productId, userName, numRating, comment.trim());
 
-  const insertStmt = db.prepare(`
-    INSERT INTO reviews (product_id, user_name, rating, comment)
-    VALUES (?, ?, ?, ?)
-  `);
-  insertStmt.run(productId, userName, numRating, comment.trim());
-
-  // Update product aggregated rating and review count
   const newCount = prod.reviews_count + 1;
   const newRating = Number(((prod.rating * prod.reviews_count + numRating) / newCount).toFixed(1));
+  db.prepare('UPDATE products SET reviews_count = ?, rating = ? WHERE id = ?')
+    .run(newCount, newRating, productId);
 
-  db.prepare(`
-    UPDATE products SET reviews_count = ?, rating = ? WHERE id = ?
-  `).run(newCount, newRating, productId);
-
-  logApiCall('POST', `/api/products/${productId}/reviews`, 201, `Review by ${userName}`);
+  logApiCall('POST', '/api/products/' + productId + '/reviews', 201, 'Review submitted');
   res.status(201).json({ message: 'Review added successfully', rating: newRating, reviewsCount: newCount });
 });
 

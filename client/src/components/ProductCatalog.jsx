@@ -25,7 +25,9 @@ export function ProductCatalog({
   onChangePriceFilter,
   sortSelect,
   onChangeSort,
-  onOpenProductDetail
+  onOpenProductDetail,
+  compareProducts = [],
+  onToggleCompare
 }) {
   return (
     <main id="catalogAnchor" className="max-w-[1440px] mx-auto px-3 md:px-6 py-6" aria-labelledby="catalogHeading">
@@ -34,7 +36,7 @@ export function ProductCatalog({
           <div>
             <h2 id="catalogHeading" className="text-xl font-black text-slate-900">{catalogTitle}</h2>
             <p className="text-xs text-slate-500 mt-0.5" aria-live="polite">
-              {loading ? 'Updating catalogue…' : `Showing ${products.length} sample items`}
+              {loading ? 'Updating catalogue…' : 'Showing ' + products.length + ' sample items'}
             </p>
           </div>
 
@@ -107,6 +109,8 @@ export function ProductCatalog({
                 product={product}
                 onOpenDetail={onOpenProductDetail}
                 onOpenAuth={onOpenAuth}
+                isCompared={compareProducts.some(item => Number(item.id) === Number(product.id))}
+                onToggleCompare={onToggleCompare}
               />
             ))}
           </div>

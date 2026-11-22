@@ -3,7 +3,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 
-export function ProductCard({ product, onOpenDetail, onOpenAuth }) {
+export function ProductCard({ product, onOpenDetail, onOpenAuth, isCompared = false, onToggleCompare }) {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const { isWished, toggleWishlist } = useWishlist();
@@ -26,18 +26,18 @@ export function ProductCard({ product, onOpenDetail, onOpenAuth }) {
           }
           toggleWishlist(product.id);
         }}
-        aria-label={wished ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
+        aria-label={wished ? 'Remove ' + product.title + ' from wishlist' : 'Add ' + product.title + ' to wishlist'}
         aria-pressed={wished}
         className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-sm transition hover:bg-rose-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
       >
-        <i className={`${wished ? 'fa-solid text-rose-500' : 'fa-regular text-slate-400'} fa-heart text-sm`} aria-hidden="true"></i>
+        <i className={(wished ? 'fa-solid text-rose-500' : 'fa-regular text-slate-400') + ' fa-heart text-sm'} aria-hidden="true"></i>
       </button>
 
       <button
         type="button"
         onClick={() => onOpenDetail(product)}
         className="w-full cursor-pointer text-left focus-visible:rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
-        aria-label={`View details for ${product.title}`}
+        aria-label={'View details for ' + product.title}
       >
         <div className="relative mb-3 flex h-44 items-center justify-center overflow-hidden rounded-xl bg-slate-50 p-3">
           {product.flashDeal && (
@@ -87,14 +87,30 @@ export function ProductCard({ product, onOpenDetail, onOpenAuth }) {
         </div>
       </button>
 
-      <button
-        type="button"
-        onClick={() => addToCart(product)}
-        disabled={Number(product.stock) <= 0}
-        className="btn-primary mt-3.5 w-full rounded-xl py-2.5 text-xs font-bold shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {Number(product.stock) <= 0 ? 'Out of stock' : 'Add to Bag'}
-      </button>
+      <div className="mt-3.5 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => addToCart(product)}
+          disabled={Number(product.stock) <= 0}
+          className="btn-primary min-w-0 flex-1 rounded-xl py-2.5 text-xs font-bold shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {Number(product.stock) <= 0 ? 'Out of stock' : 'Add to Bag'}
+        </button>
+        <button
+          type="button"
+          onClick={() => onToggleCompare?.(product)}
+          aria-pressed={isCompared}
+          aria-label={(isCompared ? 'Remove ' : 'Add ') + product.title + ' ' + (isCompared ? 'from' : 'to') + ' comparison'}
+          title={isCompared ? 'Remove from comparison' : 'Compare this product'}
+          className={(isCompared
+            ? 'border-cyan-600 bg-cyan-50 text-cyan-800'
+            : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-400 hover:text-cyan-700') +
+            ' flex shrink-0 items-center gap-1 rounded-xl border px-2.5 py-2.5 text-[11px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600'}
+        >
+          <i className="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+          {isCompared ? 'Added' : 'Compare'}
+        </button>
+      </div>
     </article>
   );
 }
