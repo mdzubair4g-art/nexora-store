@@ -148,7 +148,7 @@ export function AuthModal({ isOpen, onClose }) {
             </form>
 
             <div className="mt-4 pt-3 border-t text-[11px] text-slate-400 text-center">
-              Demo login: <strong>alex@nexora.in</strong> / <strong>nexora123</strong>
+              Local development demo only: <strong>alex@nexora.in</strong> / <strong>nexora123</strong>
             </div>
           </>
         )}

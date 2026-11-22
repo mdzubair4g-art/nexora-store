@@ -112,3 +112,27 @@ npm run seed
 * **Shopper**: `alex@nexora.in` / `nexora123`
 * **Admin**: `admin@nexora.in` / `nexora123`
 * **Demo Promo Codes**: `NEXORA10` (10% off), `WELCOME20` (20% off), `FESTIVE500` (₹500 off)
+
+
+---
+
+## Security & Demo Notes
+
+- **Payments are simulated.** The UPI and card options are portfolio demonstrations only; they do not connect to Razorpay or Stripe and never charge money.
+- **Authentication is required** to place orders, view personal order history, save wishlist items, and access administrator tools.
+- Product publishing and the API/database inspector are restricted to accounts with the `admin` role.
+- Set a strong `JWT_SECRET` in your environment before production deployment. The server intentionally refuses to start in production without it.
+- Configure `CORS_ORIGINS` as a comma-separated list of trusted frontend origins. For local development, the defaults allow `http://localhost:3000` and `http://localhost:5000`.
+- The demo shopper and administrator accounts are created only outside production: `alex@nexora.in` and `admin@nexora.in`, both with the local demo password `nexora123`. Change or remove demo accounts before sharing a development deployment.
+- Native `node:sqlite` requires Node.js 22.13 or newer. Use a persistent database service for a real production deployment; serverless `/tmp` storage is temporary and is not a durable order database.
+
+### Environment variables
+
+```env
+NODE_ENV=production
+JWT_SECRET=replace-with-a-long-random-secret
+CORS_ORIGINS=https://your-frontend-domain.example
+NEXORA_DISABLE_DEMO_USERS=true
+```
+
+Do not commit real secrets or customer data.

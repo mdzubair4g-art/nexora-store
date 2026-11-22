@@ -6,3 +6,6 @@ server/node_modules/
 *.log
 
 .vercel
+
+# Local SQLite database (generated from seed data)
+server/nexora.db

@@ -383,8 +383,10 @@ function seed() {
     INSERT INTO users (name, email, password_hash, role)
     VALUES (?, ?, ?, ?)
   `);
-  insertUser.run("Alex Mercer", "alex@nexora.in", passwordHash, "shopper");
-  insertUser.run("NEXORA Admin", "admin@nexora.in", passwordHash, "admin");
+  if (process.env.NODE_ENV !== 'production' && process.env.NEXORA_DISABLE_DEMO_USERS !== 'true') {
+    insertUser.run("Alex Mercer", "alex@nexora.in", passwordHash, "shopper");
+    insertUser.run("NEXORA Admin", "admin@nexora.in", passwordHash, "admin");
+  }
 
   // Seed Coupons
   const insertCoupon = db.prepare(`

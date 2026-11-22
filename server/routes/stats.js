@@ -1,10 +1,11 @@
 const express = require('express');
 const { db, logApiCall } = require('../db');
+const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
 // GET database statistics and live traffic logs
-router.get('/', (req, res) => {
+router.get('/', requireAuth, requireRole('admin'), (req, res) => {
   const prodCount = db.prepare('SELECT COUNT(*) as count FROM products').get().count;
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
   const orderCount = db.prepare('SELECT COUNT(*) as count FROM orders').get().count;
