@@ -40,10 +40,12 @@ export function CuratedCollections({ onSelectCollection }) {
     <section className="max-w-[1440px] mx-auto px-3 md:px-6 pt-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {COLLECTIONS.map(col => (
-          <div
+          <button
+            type="button"
             key={col.title}
             onClick={() => onSelectCollection(col.name)}
-            className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer hover:shadow-md hover:border-cyan-200 transition group"
+            aria-label={`Browse ${col.title} collection`}
+            className="w-full text-left bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:shadow-md hover:border-cyan-200 transition group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
           >
             <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${col.tagColor}`}>
               {col.tag}
@@ -61,7 +63,7 @@ export function CuratedCollections({ onSelectCollection }) {
             <p className="text-xs text-slate-500 line-clamp-2">
               {col.desc}
             </p>
-          </div>
+          </button>
         ))}
       </div>
     </section>
