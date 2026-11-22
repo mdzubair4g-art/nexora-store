@@ -50,10 +50,11 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   const handleConfirmOrder = async (e) => {
     e.preventDefault();
     if (cart.length === 0) return alert('Your shopping bag is empty.');
+    if (!user) return alert('Please sign in before placing an order so you can securely access your order history.');
 
     setIsProcessing(true);
     try {
-      if (!/^\\d{10}$/.test(recipientPhone.trim())) throw new Error('Enter a valid 10-digit mobile number.');
+      if (!/^\d{10}$/.test(recipientPhone.trim())) throw new Error('Enter a valid 10-digit mobile number.');
       if (!shippingInfo || shippingInfo.pincode !== pincode) throw new Error('Please verify your delivery PIN code before placing the order.');
 
       let paymentId = null;
