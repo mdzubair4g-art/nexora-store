@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -16,9 +16,11 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   const [recipientPhone, setRecipientPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [isProcessing, setIsProcessing] = useState(false);
+  const pincodeLookupId = useRef(0);
 
   useEffect(() => {
     if (isOpen && user?.name) setRecipientName(user.name);
+    if (!isOpen) pincodeLookupId.current += 1;
   }, [isOpen, user?.name]);
 
   if (!isOpen) return null;
@@ -39,6 +41,10 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   };
 
   const handlePincodeChange = (val) => {
+    pincodeLookupId.current += 1;
+    setLoadingPincode(false);
+    setPincodeError('');
+    setShippingInfo(null);
     setPincode(val);
     if (val.length === 6) {
       handlePincodeLookup(val);
@@ -99,6 +105,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
+          aria-label="Close checkout"
           className="absolute top-4 right-4 text-xl text-slate-400 hover:text-slate-600 transition"
         >
           &times;
@@ -115,7 +122,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
         </div>
 
         <form onSubmit={handleConfirmOrder} className="space-y-4 text-xs">
-          {/* Section 1: Delivery Address & Real Pincode API */}
+          {/* Section 1: Delivery Address & Postal-Area Lookup */}
           <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2.5">
             <div className="flex items-center justify-between">
               <label className="font-extrabold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
