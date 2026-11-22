@@ -9,9 +9,9 @@ const router = express.Router();
 // Register new user
 router.post('/register', (req, res) => {
   const { name, email, password } = req.body;
-  if (!email || !password) {
+  if (!email || !password || typeof email !== 'string' || typeof password !== 'string' || password.length < 8 || password.length > 128 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
     logApiCall('POST', '/api/auth/register', 400, 'Missing email/password');
-    return res.status(400).json({ error: 'Email and password are required' });
+    return res.status(400).json({ error: 'Enter a valid email and a password between 8 and 128 characters.' });
   }
 
   const cleanEmail = email.toLowerCase().trim();
@@ -21,7 +21,7 @@ router.post('/register', (req, res) => {
     return res.status(409).json({ error: 'Email already registered. Please sign in.' });
   }
 
-  const salt = bcrypt.genSaltSync(10);
+  const salt = bcrypt.genSaltSync(12);
   const passwordHash = bcrypt.hashSync(password, salt);
   const displayName = name ? name.trim() : cleanEmail.split('@')[0];
 
@@ -38,7 +38,7 @@ router.post('/register', (req, res) => {
 // Login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
+  if (!email || !password || typeof email !== 'string' || typeof password !== 'string' || password.length > 128) {
     logApiCall('POST', '/api/auth/login', 400, 'Missing credentials');
     return res.status(400).json({ error: 'Email and password are required' });
   }
