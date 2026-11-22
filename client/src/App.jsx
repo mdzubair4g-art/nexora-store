@@ -145,7 +145,7 @@ export function App() {
   };
 
   const handleOrderPlaced = (order) => {
-    alert(`Order Placed Successfully!\nOrder Reference: ${order.orderId}\nPayment Method: ${order.paymentMethod}`);
+    alert(`Demo order saved!\nReference: ${order.orderId}\nPayment method: ${order.paymentMethod}\nNo real payment or delivery has been arranged.`);
     setIsOrdersModalOpen(true);
   };
 
