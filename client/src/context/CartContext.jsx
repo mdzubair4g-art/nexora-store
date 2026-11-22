@@ -96,8 +96,15 @@ export function CartProvider({ children }) {
       if (!prev[index]) return prev;
       const copy = [...prev];
       const nextQty = copy[index].qty + delta;
-      if (nextQty <= 0) copy.splice(index, 1);
-      else copy[index] = { ...copy[index], qty: Math.min(nextQty, 25, copy[index].stock || 25) };
+      if (nextQty <= 0) {
+        copy.splice(index, 1);
+      } else if (delta > 0) {
+        const available = Number.isInteger(copy[index].stock) ? copy[index].stock : 25;
+        if (available <= copy[index].qty) return prev;
+        copy[index] = { ...copy[index], qty: Math.min(nextQty, 25, available) };
+      } else {
+        copy[index] = { ...copy[index], qty: nextQty };
+      }
       return copy;
     });
     invalidateCoupon();
