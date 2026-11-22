@@ -1,9 +1,11 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
 
-export function ProductCard({ product, onOpenDetail }) {
+export function ProductCard({ product, onOpenDetail, onOpenAuth }) {
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const { isWished, toggleWishlist } = useWishlist();
 
   const price = Number(product.price) || 0;
@@ -17,7 +19,13 @@ export function ProductCard({ product, onOpenDetail }) {
     <article className="group relative flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-4 transition duration-200 hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-lg">
       <button
         type="button"
-        onClick={() => toggleWishlist(product.id)}
+        onClick={() => {
+          if (!user) {
+            onOpenAuth?.();
+            return;
+          }
+          toggleWishlist(product.id);
+        }}
         aria-label={wished ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
         aria-pressed={wished}
         className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-sm transition hover:bg-rose-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
