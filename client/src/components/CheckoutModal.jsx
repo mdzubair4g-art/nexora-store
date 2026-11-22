@@ -26,17 +26,20 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   if (!isOpen) return null;
 
   const handlePincodeLookup = async (code) => {
-    if (!/^\d{6}$/.test(code)) return;
+    if (!/^\\d{6}$/.test(code)) return;
+    const requestId = ++pincodeLookupId.current;
     setLoadingPincode(true);
     setPincodeError('');
     try {
       const data = await api.lookupPincode(code);
-      setShippingInfo(data);
+      if (requestId === pincodeLookupId.current) setShippingInfo(data);
     } catch (err) {
-      setShippingInfo(null);
-      setPincodeError(err.message || 'Could not verify this PIN code. Please try again.');
+      if (requestId === pincodeLookupId.current) {
+        setShippingInfo(null);
+        setPincodeError(err.message || 'Could not verify this PIN code. Please try again.');
+      }
     } finally {
-      setLoadingPincode(false);
+      if (requestId === pincodeLookupId.current) setLoadingPincode(false);
     }
   };
 
