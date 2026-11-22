@@ -26,7 +26,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
   if (!isOpen) return null;
 
   const handlePincodeLookup = async (code) => {
-    if (!/^\\d{6}$/.test(code)) return;
+    if (!/^\d{6}$/.test(code)) return;
     const requestId = ++pincodeLookupId.current;
     setLoadingPincode(true);
     setPincodeError('');
