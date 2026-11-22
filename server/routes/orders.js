@@ -32,7 +32,7 @@ function formatOrder(o) {
 }
 
 // Create an order. Prices, stock, and coupon discounts are recalculated on the server.
-router.post('/', (req, res, next) => {
+router.post('/', requireAuth, (req, res, next) => {
   const {
     userEmail,
     items,
@@ -49,7 +49,7 @@ router.post('/', (req, res, next) => {
     return res.status(400).json({ error: 'Add between 1 and 25 items to your order.' });
   }
 
-  const email = req.user?.email || (typeof userEmail === 'string' ? userEmail.trim().toLowerCase() : '');
+  const email = String(req.user.email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'A valid contact email is required.' });
   }
