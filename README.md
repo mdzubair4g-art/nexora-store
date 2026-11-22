@@ -22,7 +22,9 @@ Browser → React + Vite + Tailwind CSS → /api → Node.js + Express → SQLit
 - Open product details and view sample review information.
 - Add products to cart and adjust quantities.
 - Register, sign in and manage a personal wishlist.
-- Admin-only product publishing and statistics.
+- Admin-only product publishing, inventory management (sample price, MRP and stock updates), and statistics.
+- Compare up to three products side by side using price, rating, stock and product details.
+- Recently viewed products are saved on the current device, with an option to clear the history.
 - View demo order records for the signed-in account.
 - Resolve an Indian postal PIN to its postal area.
 - Try simulated payment and demo Cash on Delivery flows.
@@ -80,6 +82,7 @@ Never commit real `.env` files, database credentials, JWT secrets or customer da
 | GET | `/api/auth/me` | Read the current signed-in account |
 | GET | `/api/products` | Browse and filter the catalogue |
 | GET | `/api/products/:id` | Read a product and its reviews |
+| PATCH | `/api/products/:id` | Update sample price, MRP and stock (administrator only) |
 | POST | `/api/orders` | Create a demo order (authenticated) |
 | GET | `/api/orders` | Read the signed-in user's order history |
 | GET/POST | `/api/wishlist` | Read or update the signed-in user's wishlist |
@@ -93,7 +96,8 @@ Administrator endpoints require an authenticated administrator account.
 - Order placement, order history and wishlist routes require authentication.
 - Customer identity is derived from the signed JWT, not trusted from a supplied email.
 - Order totals, product prices, coupon discounts and stock are recalculated by the backend.
-- Product publishing and database statistics are administrator-only.
+- Product publishing, sample inventory updates and database statistics are administrator-only.
+- Product comparison and recently viewed history are stored in the shopper's browser; they are not synced between devices.
 - Passwords are hashed with bcrypt; production startup requires a private `JWT_SECRET`.
 - UPI/card payment endpoints are simulations. They do not contact Razorpay, Stripe, UPI apps or banks.
 - PIN lookup does not integrate a courier partner or provide verified delivery promises.
@@ -106,7 +110,7 @@ Administrator endpoints require an authenticated administrator account.
 2. Add automated API tests and deployment smoke tests.
 3. Integrate a payment provider only if the project is intentionally prepared for real transactions.
 4. Integrate a courier service before offering delivery dates, shipping fees or serviceability.
-5. Add verified inventory, admin stock management and genuine store policies before any public store launch.
+5. Connect verified supplier inventory and genuine store policies before any public store launch.
 
 ## Repository
 
