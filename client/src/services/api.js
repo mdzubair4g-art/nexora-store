@@ -78,7 +78,7 @@ export const api = {
 
   // Wishlist
   async getWishlist(email) {
-    const res = await fetch(`${API_BASE}/wishlist?email=${encodeURIComponent(email || '')}`);
+    const res = await fetch(`${API_BASE}/wishlist`, { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to load wishlist');
     return res.json();
   },
@@ -86,8 +86,8 @@ export const api = {
   async toggleWishlist(email, productId) {
     const res = await fetch(`${API_BASE}/wishlist/toggle`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, productId })
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ productId })
     });
     if (!res.ok) throw new Error('Failed to update wishlist');
     return res.json();
@@ -160,7 +160,7 @@ export const api = {
 
   // Server Inspector Stats
   async getStats() {
-    const res = await fetch(`${API_BASE}/stats`);
+    const res = await fetch(`${API_BASE}/stats`, { headers: getAuthHeader() });
     if (!res.ok) throw new Error('Failed to fetch stats');
     return res.json();
   }
