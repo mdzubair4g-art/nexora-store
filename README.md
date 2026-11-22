@@ -124,7 +124,7 @@ npm run seed
 - Set a strong `JWT_SECRET` in your environment before production deployment. The server intentionally refuses to start in production without it.
 - Configure `CORS_ORIGINS` as a comma-separated list of trusted frontend origins. For local development, the defaults allow `http://localhost:3000` and `http://localhost:5000`.
 - The demo shopper and administrator accounts are created only outside production: `alex@nexora.in` and `admin@nexora.in`, both with the local demo password `nexora123`. Change or remove demo accounts before sharing a development deployment.
-- Native `node:sqlite` requires Node.js 22.5 or newer. Use a persistent database service for a real production deployment; serverless `/tmp` storage is temporary and is not a durable order database.
+- Native `node:sqlite` requires Node.js 22.13 or newer. Use a persistent database service for a real production deployment; serverless `/tmp` storage is temporary and is not a durable order database.
 
 ### Environment variables
 
