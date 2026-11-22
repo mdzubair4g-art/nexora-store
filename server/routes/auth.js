@@ -9,7 +9,7 @@ const router = express.Router();
 // Register new user
 router.post('/register', (req, res) => {
   const { name, email, password } = req.body;
-  if (!email || !password || typeof email !== 'string' || typeof password !== 'string' || password.length < 8 || password.length > 128 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+  if (!email || !password || typeof email !== 'string' || typeof password !== 'string' || password.length < 8 || password.length > 128 || !email.includes('@') || !email.split('@')[1]?.includes('.')) {
     logApiCall('POST', '/api/auth/register', 400, 'Missing email/password');
     return res.status(400).json({ error: 'Enter a valid email and a password between 8 and 128 characters.' });
   }
@@ -38,7 +38,7 @@ router.post('/register', (req, res) => {
 // Login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password || typeof email !== 'string' || typeof password !== 'string' || password.length > 128) {
+  if (!email || !password || typeof email !== 'string' || typeof password !== 'string' || password.length < 8 || password.length > 128 || !email.includes('@') || !email.split('@')[1]?.includes('.')) {
     logApiCall('POST', '/api/auth/login', 400, 'Missing credentials');
     return res.status(400).json({ error: 'Email and password are required' });
   }
