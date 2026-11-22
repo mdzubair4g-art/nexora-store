@@ -54,12 +54,14 @@ export function HeroBanner({ onShopFlashDeals, onExploreCatalog }) {
             </p>
             <div className="pt-1 flex flex-wrap gap-3">
               <button
+                type="button"
                 onClick={onShopFlashDeals}
                 className="btn-primary px-5 py-2.5 rounded-xl font-bold text-xs shadow"
               >
-                Shop Flash Deals
+                Browse Featured Picks
               </button>
               <button
+                type="button"
                 onClick={onExploreCatalog}
                 className="bg-white/15 hover:bg-white/25 border border-white/20 px-5 py-2.5 rounded-xl font-bold text-xs transition"
               >
@@ -78,12 +80,16 @@ export function HeroBanner({ onShopFlashDeals, onExploreCatalog }) {
 
         {/* Carousel Prev/Next Buttons */}
         <button
+          type="button"
+          aria-label="Previous featured slide"
           onClick={() => setSlideIndex(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
           className="absolute left-3 top-1/2 -translate-y-1/2 bg-slate-950/40 hover:bg-slate-950/70 text-white w-9 h-9 rounded-full flex items-center justify-center transition"
         >
           <i className="fa-solid fa-chevron-left text-xs"></i>
         </button>
         <button
+          type="button"
+          aria-label="Next featured slide"
           onClick={() => setSlideIndex(prev => (prev + 1) % HERO_SLIDES.length)}
           className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-950/40 hover:bg-slate-950/70 text-white w-9 h-9 rounded-full flex items-center justify-center transition"
         >
