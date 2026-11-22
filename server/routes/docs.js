@@ -112,7 +112,7 @@ const DOCS_HTML = `<!DOCTYPE html>
           </div>
           <button onclick="runTest('GET', '/api/shipping/pincode/560001')" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-lg">Execute</button>
         </div>
-        <p class="text-[11px] text-slate-400">Real-time Indian postal PIN code resolution & delivery ETA calculation.</p>
+        <p class="text-[11px] text-slate-400">Postal-area lookup only. Courier serviceability and delivery dates are not checked.</p>
       </div>
 
       <!-- Endpoint 4: Auth -->
@@ -148,7 +148,7 @@ const DOCS_HTML = `<!DOCTYPE html>
           </div>
           <button onclick="runTest('POST', '/api/payments/create-order', { amount: 3195, currency: 'INR' })" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-lg">Execute</button>
         </div>
-        <p class="text-[11px] text-slate-400">Creates Razorpay / Payment Gateway order in paise with currency INR.</p>
+        <p class="text-[11px] text-slate-400">Creates a simulated demo payment response. No payment provider is contacted and no money is charged.</p>
       </div>
 
       <!-- Endpoint 7: Orders List -->
@@ -160,7 +160,7 @@ const DOCS_HTML = `<!DOCTYPE html>
           </div>
           <button onclick="runTest('GET', '/api/orders')" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-lg">Execute</button>
         </div>
-        <p class="text-[11px] text-slate-400">Fetch persistent customer orders with items, addresses & tracking stages.</p>
+        <p class="text-[11px] text-slate-400">Fetch the signed-in customer's demo order records. Courier tracking is not connected.</p>
       </div>
 
       <!-- Endpoint 8: Stats & Logs -->
@@ -172,7 +172,7 @@ const DOCS_HTML = `<!DOCTYPE html>
           </div>
           <button onclick="runTest('GET', '/api/stats')" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-lg">Execute</button>
         </div>
-        <p class="text-[11px] text-slate-400">Real-time table counts and the latest 25 REST API traffic log entries.</p>
+        <p class="text-[11px] text-slate-400">Runtime database counts and the latest 25 REST API request log entries.</p>
       </div>
 
     </div>
@@ -186,7 +186,7 @@ const DOCS_HTML = `<!DOCTYPE html>
         </span>
         <span id="responseStatus" class="font-mono text-slate-400">Ready</span>
       </div>
-      <pre id="outputBox" class="h-64 overflow-y-auto p-3 code-box rounded-xl font-mono text-xs text-emerald-400 leading-relaxed">Select any endpoint above and click "Execute" to inspect the live response.</pre>
+      <pre id="outputBox" class="h-64 overflow-y-auto p-3 code-box rounded-xl font-mono text-xs text-emerald-400 leading-relaxed">Select an endpoint above and click "Execute" to inspect its API response.</pre>
     </div>
   </section>
 
