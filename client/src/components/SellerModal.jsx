@@ -38,7 +38,7 @@ export function SellerModal({ isOpen, onClose, onProductPublished }) {
         price: Number(price),
         mrp: mrp ? Number(mrp) : Number(price) + 1200,
         image: image.trim(),
-        highlights: highlight.trim() ? [highlight.trim()] : ['Verified marketplace listing']
+        highlights: highlight.trim() ? [highlight.trim()] : ['Sample product listing']
       });
 
       onProductPublished(created);
@@ -72,7 +72,7 @@ export function SellerModal({ isOpen, onClose, onProductPublished }) {
           <h3 className="text-lg font-black text-slate-900">NEXORA Seller Studio</h3>
         </div>
         <p className="text-xs text-slate-500 mb-4">
-          Publish a new item directly to the live SQLite catalog.
+          Add a sample item to the demo catalogue. This does not connect to a real supplier.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-3 text-sm">
@@ -110,14 +110,14 @@ export function SellerModal({ isOpen, onClose, onProductPublished }) {
               required
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              placeholder="Offer Price (₹)"
+              placeholder="Sample price (₹)"
               className="w-full border rounded-xl px-3 py-2 outline-none"
             />
             <input
               type="number"
               value={mrp}
               onChange={(e) => setMrp(e.target.value)}
-              placeholder="MRP (₹)"
+              placeholder="Sample MRP (₹)"
               className="w-full border rounded-xl px-3 py-2 outline-none"
             />
           </div>
@@ -143,7 +143,7 @@ export function SellerModal({ isOpen, onClose, onProductPublished }) {
             disabled={loading}
             className="w-full btn-cyan py-2.5 rounded-xl font-bold text-xs shadow disabled:opacity-50"
           >
-            {loading ? 'Publishing to Database...' : 'Publish to Catalog'}
+            {loading ? 'Saving sample item...' : 'Publish to Catalog'}
           </button>
         </form>
       </div>
