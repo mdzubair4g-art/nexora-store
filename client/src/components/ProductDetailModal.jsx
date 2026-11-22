@@ -205,7 +205,7 @@ export function ProductDetailModal({ product: initialProduct, onClose, onBuyNow 
                 onChange={(e) => setRevComment(e.target.value)}
                 required
                 rows={3}
-                placeholder="Share your product feedback...”
+                placeholder="Share your product feedback..."
                 className="w-full border rounded-xl p-3 outline-none focus:ring-1 focus:ring-cyan-500"
               />
 
