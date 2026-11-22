@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 480" role="img" aria-labelledby="title desc">
+  <title id="title">NEXORA product image placeholder</title>
+  <desc id="desc">Neutral placeholder for a sample product image that could not be loaded.</desc>
+  <rect width="600" height="480" rx="28" fill="#f1f5f9"/>
+  <rect x="190" y="110" width="220" height="220" rx="34" fill="#e2e8f0"/>
+  <path d="M245 270l45-55 36 40 26-29 37 44H245z" fill="#94a3b8"/>
+  <circle cx="275" cy="177" r="16" fill="#94a3b8"/>
+  <text x="300" y="385" text-anchor="middle" fill="#475569" font-family="Arial,sans-serif" font-size="26" font-weight="700">NEXORA</text>
+  <text x="300" y="420" text-anchor="middle" fill="#64748b" font-family="Arial,sans-serif" font-size="16">Sample product image</text>
+</svg>
