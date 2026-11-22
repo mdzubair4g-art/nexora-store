@@ -17,7 +17,11 @@ export const api = {
     if (params.sort && params.sort !== 'featured') qs.append('sort', params.sort);
 
     const res = await fetch(`${API_BASE}/products?${qs.toString()}`);
-    if (!res.ok) throw new Error('Failed to load products');
+    if (!res.ok) {
+      const error = new Error('Failed to load products. Please try again.');
+      error.status = res.status;
+      throw error;
+    }
     return res.json();
   },
 
@@ -54,6 +58,17 @@ export const api = {
   },
 
   // Auth
+  async getCurrentUser() {
+    const res = await fetch(`${API_BASE}/auth/me`, { headers: getAuthHeader() });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const error = new Error(data.error || 'Could not verify the signed-in account.');
+      error.status = res.status;
+      throw error;
+    }
+    return data;
+  },
+
   async login(email, password) {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
@@ -116,7 +131,9 @@ export const api = {
   // Payment Gateway (Option 4)
   async getPaymentMethods() {
     const res = await fetch(`${API_BASE}/payments/methods`);
-    return res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Could not load demo payment methods.');
+    return data;
   },
 
   async createPaymentOrder(amount, receipt) {
@@ -135,7 +152,9 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    return res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Demo payment verification failed.');
+    return data;
   },
 
   // Orders
@@ -150,8 +169,8 @@ export const api = {
     return data;
   },
 
-  async getOrders(email) {
-    const res = await fetch(`${API_BASE}/orders?email=${encodeURIComponent(email || '')}`, {
+  async getOrders() {
+    const res = await fetch(`${API_BASE}/orders`, {
       headers: getAuthHeader()
     });
     if (!res.ok) throw new Error('Failed to fetch orders');
