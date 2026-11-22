@@ -94,14 +94,14 @@ export function Navbar({
         {/* Header Right Actions */}
         <div className="flex items-center gap-1.5 md:gap-2">
           {/* Server status pill */}
-          <button
+          {user?.role === 'admin' && <button
             onClick={onToggleServerDrawer}
             className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/25 transition"
             title="Inspect Live SQLite Database & REST API Traffic"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Server: Online</span>
-          </button>
+            <span>Admin: API Inspector</span>
+          </button>}
 
           {/* Account */}
           <button
