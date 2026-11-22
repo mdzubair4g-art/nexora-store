@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from './services/api';
 import { Navbar } from './components/Navbar';
 import { CategoryBar } from './components/CategoryBar';
@@ -28,13 +28,15 @@ export function App() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeSearchQuery, setActiveSearchQuery] = useState('');
+  const productRequestId = useRef(0);
   const [priceFilter, setPriceFilter] = useState('all');
   const [sortSelect, setSortSelect] = useState('featured');
   const [flashOnly, setFlashOnly] = useState(false);
   const [catalogTitle, setCatalogTitle] = useState('All Collections Catalog');
 
   // Location
-  const [deliveryLocation, setDeliveryLocation] = useState('Bengaluru 560001');
+  const [deliveryLocation, setDeliveryLocation] = useState('Set location');
 
   // Modals & Views
   const [activeProductDetail, setActiveProductDetail] = useState(null);
@@ -46,6 +48,7 @@ export function App() {
 
   // Fetch products from SQLite Backend API
   const fetchProducts = async () => {
+    const requestId = ++productRequestId.current;
     try {
       setLoading(true);
       setLoadError('');
@@ -53,22 +56,24 @@ export function App() {
         category: selectedCategory,
         collection: selectedCollection,
         flashOnly,
-        search: searchQuery,
+        search: activeSearchQuery,
         priceRange: priceFilter,
         sort: sortSelect
       });
-      setProducts(data.products || []);
+      if (requestId === productRequestId.current) setProducts(data.products || []);
     } catch (err) {
-      console.error('Failed to load products from API:', err);
-      setLoadError(err.message || 'We could not load the catalogue. Please try again.');
+      if (requestId === productRequestId.current) {
+        console.error('Failed to load products from API:', err);
+        setLoadError(err.message || 'We could not load the catalogue. Please try again.');
+      }
     } finally {
-      setLoading(false);
+      if (requestId === productRequestId.current) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, selectedCollection, flashOnly, priceFilter, sortSelect]);
+  }, [selectedCategory, selectedCollection, flashOnly, activeSearchQuery, priceFilter, sortSelect]);
 
   const scrollToCatalog = () => {
     document.getElementById('catalogAnchor')?.scrollIntoView({ behavior: 'smooth' });
@@ -79,6 +84,7 @@ export function App() {
     setSelectedCollection(null);
     setFlashOnly(false);
     setSearchQuery('');
+    setActiveSearchQuery('');
     setPriceFilter('all');
     setSortSelect('featured');
     setCatalogTitle('All Collections Catalog');
@@ -88,6 +94,8 @@ export function App() {
     setActiveProductDetail(null);
     setSelectedCategory(cat);
     setSelectedCollection(null);
+    setSearchQuery('');
+    setActiveSearchQuery('');
     setFlashOnly(false);
     setCatalogTitle(cat === 'All' ? 'All Collections Catalog' : `${cat} Collection`);
     scrollToCatalog();
@@ -97,6 +105,8 @@ export function App() {
     setActiveProductDetail(null);
     setSelectedCollection(colName);
     setSelectedCategory('All');
+    setSearchQuery('');
+    setActiveSearchQuery('');
     setFlashOnly(false);
     setCatalogTitle(colName);
     scrollToCatalog();
@@ -107,15 +117,18 @@ export function App() {
     setFlashOnly(true);
     setSelectedCategory('All');
     setSelectedCollection(null);
-    setCatalogTitle('Flash Deals — Limited Time Lightning Offers');
+    setSearchQuery('');
+    setActiveSearchQuery('');
+    setCatalogTitle('Featured Sample Picks');
     scrollToCatalog();
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setActiveProductDetail(null);
-    setCatalogTitle(searchQuery.trim() ? `Search results for "${searchQuery}"` : 'All Collections Catalog');
-    fetchProducts();
+    const query = searchQuery.trim();
+    setActiveSearchQuery(query);
+    setCatalogTitle(query ? `Search results for "${query}"` : 'All Collections Catalog');
     scrollToCatalog();
   };
 
@@ -203,6 +216,7 @@ export function App() {
             error={loadError}
             onRetry={fetchProducts}
             onClearFilters={handleClearFilters}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
             priceFilter={priceFilter}
             onChangePriceFilter={setPriceFilter}
             sortSelect={sortSelect}
