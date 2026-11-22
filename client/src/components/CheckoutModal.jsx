@@ -4,15 +4,15 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
 export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
-  const { cart, finalTotal, subtotal, couponDiscount, clearCart } = useCart();
+  const { cart, finalTotal, subtotal, couponDiscount, coupon, clearCart } = useCart();
   const { user } = useAuth();
 
   const [pincode, setPincode] = useState('560001');
   const [shippingInfo, setShippingInfo] = useState(null);
   const [loadingPincode, setLoadingPincode] = useState(false);
-  const [addressLine, setAddressLine] = useState('Flat 402, Prestige Tower, MG Road');
-  const [recipientName, setRecipientName] = useState(user?.name || 'Alex Mercer');
-  const [recipientPhone, setRecipientPhone] = useState('9876543210');
+  const [addressLine, setAddressLine] = useState('');
+  const [recipientName, setRecipientName] = useState(user?.name || '');
+  const [recipientPhone, setRecipientPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -53,27 +53,28 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
 
     setIsProcessing(true);
     try {
-      // 1. Create Gateway Payment Order (Option 4)
-      const paymentOrder = await api.createPaymentOrder(finalTotal, `rcpt_${Date.now()}`);
+      if (!/^\\d{10}$/.test(recipientPhone.trim())) throw new Error('Enter a valid 10-digit mobile number.');
+      if (!shippingInfo || shippingInfo.pincode !== pincode) throw new Error('Please verify your delivery PIN code before placing the order.');
 
-      // 2. Simulate Payment Verification
-      const paymentVerification = await api.verifyPayment({
-        razorpay_order_id: paymentOrder.id,
-        razorpay_payment_id: `pay_${Date.now()}`,
-        method: paymentMethod
-      });
+      let paymentId = null;
+      if (paymentMethod !== 'cod') {
+        const paymentOrder = await api.createPaymentOrder(finalTotal, `demo_rcpt_${Date.now()}`);
+        const paymentVerification = await api.verifyPayment({ razorpay_order_id: paymentOrder.id, method: paymentMethod });
+        if (!paymentVerification.verified || paymentVerification.mode !== 'demo') throw new Error('Demo payment could not be verified.');
+        paymentId = paymentVerification.paymentId;
+      }
 
-      // 3. Persist Order in SQLite Database
-      const fullAddress = `${addressLine}, ${shippingInfo?.city || ''}, ${shippingInfo?.state || ''} - ${pincode}`;
+      const fullAddress = `${recipientName.trim()} · ${recipientPhone.trim()} · ${addressLine.trim()}, ${shippingInfo.city}, ${shippingInfo.state} - ${pincode}`;
       const order = await api.placeOrder({
         userEmail: user?.email || 'guest@nexora.in',
         items: cart,
         subtotal,
         discount: couponDiscount,
+        couponCode: coupon,
         totalAmount: finalTotal,
         paymentMethod: paymentMethod === 'upi' ? 'Instant UPI (GPay/PhonePe)' : paymentMethod === 'card' ? 'Credit/Debit Card' : 'Cash on Delivery (COD)',
         paymentStatus: paymentMethod === 'cod' ? 'PENDING_ON_DELIVERY' : 'PAID_VERIFIED',
-        paymentId: paymentVerification.paymentId,
+        paymentId,
         shippingAddress: fullAddress,
         city: shippingInfo?.city || 'Bengaluru',
         state: shippingInfo?.state || 'Karnataka',
@@ -106,7 +107,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
           </div>
           <div>
             <h3 className="text-base font-black text-slate-900 leading-tight">Secure Express Checkout</h3>
-            <p className="text-[11px] text-slate-500">256-Bit SSL Encrypted Payment</p>
+            <p className="text-[11px] text-amber-700">Portfolio demo checkout · No real payment is processed</p>
           </div>
         </div>
 
@@ -199,7 +200,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
           <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2.5">
             <label className="font-extrabold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
               <i className="fa-solid fa-credit-card text-orange-600"></i>
-              2. Payment Method
+              2. Payment Method (Demo)
             </label>
 
             <div className="space-y-2">
@@ -264,7 +265,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
           {/* Confirm Button */}
           <button
             type="submit"
-            disabled={isProcessing}
+            disabled={isProcessing || loadingPincode || !shippingInfo || cart.length === 0}
             className="w-full btn-primary py-3 rounded-xl font-bold text-sm shadow flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isProcessing ? (
@@ -273,7 +274,7 @@ export function CheckoutModal({ isOpen, onClose, onOrderPlaced }) {
                 Securing Payment & Placing Order...
               </>
             ) : (
-              `Authorize & Pay ₹${finalTotal.toLocaleString('en-IN')}`
+              (paymentMethod === 'cod' ? 'Place Demo COD Order' : `Simulate Payment · ₹${finalTotal.toLocaleString('en-IN')}`)
             )}
           </button>
         </form>
