@@ -23,7 +23,7 @@ export function CategoryBar({
     <nav className="sub-bar text-slate-200 text-xs px-4 md:px-6 py-2 flex items-center gap-4 overflow-x-auto no-scrollbar border-t border-white/5">
       <button
         type="button"
-        onClick={() => onSelectCategory('All')
+        onClick={() => onSelectCategory('All')}
         className={`font-bold hover:text-cyan-300 whitespace-nowrap transition ${
           selectedCategory === 'All' ? 'text-cyan-300' : 'text-white'
         }`}
