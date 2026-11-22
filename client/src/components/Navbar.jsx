@@ -116,7 +116,7 @@ export function Navbar({
 
           {/* Wishlist */}
           <button
-            onClick={() => setIsWishlistOpen(true)}
+            onClick={() => { if (user) setIsWishlistOpen(true); else onOpenAuth(); }}
             className="relative px-2.5 py-1.5 rounded-xl hover:bg-white/10 transition"
             title="View Wishlist"
           >
