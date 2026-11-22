@@ -70,6 +70,10 @@ router.post('/', requireAuth, (req, res, next) => {
     return res.status(400).json({ error: 'Enter a valid 6-digit PIN code.' });
   }
 
+  if (paymentMethod !== 'cod' && (typeof paymentId !== 'string' || !paymentId.startsWith('demo_pay_'))) {
+    return res.status(400).json({ error: 'Complete the demo payment verification before placing this order.' });
+  }
+
   let transactionOpen = false;
 
   try {
